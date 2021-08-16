@@ -60,6 +60,7 @@ module	ConnectivityConstraint	src/hamiltonian/ConnectivityConstraint.js
 module 	SoftConnectivityConstraint	src/hamiltonian/SoftConnectivityConstraint.js
 module	LocalConnectivityConstraint	src/hamiltonian/LocalConnectivityConstraint.js
 module	SoftLocalConnectivityConstraint src/hamiltonian/SoftLocalConnectivityConstraint.js
+module	ImageConstraint src/hamiltonian/ImageConstraint.js
 
 # constraints: hard constraints
 module	HardConstraint	src/hamiltonian/HardConstraint.js
