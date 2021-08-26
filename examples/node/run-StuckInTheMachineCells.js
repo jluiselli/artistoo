@@ -9,7 +9,7 @@ let config = {
 
 	// Grid settings
 	ndim : 2,
-	field_size : [1920,1080],
+	field_size : [640,360],
 	
 	// CPM parameters and configuration
 	conf : {
@@ -26,12 +26,12 @@ let config = {
 
 		IMG_MODE : [NaN,"RGB"],
         IMG_LAMBDA : [0, 1],
-		IMG_PATH : "./input/1080bmps/075.bmp",
+		IMG_PATH : "./input/360bmps/069.bmp",
 		IMG_CELL : [true, true],
    
-		LAMBDA_ACT : [0,100],				// ActivityConstraint importance per cellkind
-		MAX_ACT : [0, 30],					// Activity memory duration per cellkind
-		ACT_MEAN : "geometric",				// Is neighborhood activity computed as a
+		// LAMBDA_ACT : [0,100],				// ActivityConstraint importance per cellkind
+		// MAX_ACT : [0, 30],					// Activity memory duration per cellkind
+		// ACT_MEAN : "geometric",				// Is neighborhood activity computed as a
 				
 		// Adhesion parameters:
 		J : [ 
@@ -41,7 +41,7 @@ let config = {
 		
 		// VolumeConstraint parameters
 		LAMBDA_V : [0,50],					// VolumeConstraint importance per cellkind
-		V : [0,180],						// Target volume of each cellkind
+		V : [0,300],						// Target volume of each cellkind
 		
 
 		
@@ -55,10 +55,10 @@ let config = {
 	simsettings : {
 	
 		// Cells on the grid
-		NRCELLS : [6000],					// Number of cells to seed for all
+		NRCELLS : [1400],					// Number of cells to seed for all
 		// non-background cellkinds.
 		// Runtime etc
-		BURNIN : 0,
+		BURNIN : 200,
 		RUNTIME : 100000000,
 		RUNTIME_BROWSER : "Inf",
 		
@@ -67,7 +67,7 @@ let config = {
 		CELLCOLOR : ["#CCEEFF"],
 		ACTCOLOR : 	[false],		// Should pixel activity values be displayed?
 		// SHOWBORDERS : [false , false, false , false, false , false],				// Should cellborders be displayed?
-		SHOWBORDERS : [false],	
+		SHOWBORDERS : [true],	
 		zoom : 2,							// zoom in on canvas with this factor.
 	
 
@@ -109,15 +109,15 @@ function pad(number, length) {
 function logStats(){
 	console.log(this.C.time)
 }
-var filenum = 105
+var filenum = 069
 function postMCSListener(){
-	if (this.C.time < 20){
+	if (this.C.time < 200){
 		return
 	} 
-	if (this.C.time % 20 == 0) {
+	if (this.C.time % 5 == 0) {
 		++filenum
-		imgconstraint.setImage("./input/1080bmps/"+pad(filenum, 3)+".bmp")
-		console.log("changed img to " + "./input/1080bmps/"+pad(filenum, 3)+".bmp")
+		imgconstraint.setImage("./input/360bmps/"+pad(filenum, 3)+".bmp")
+		console.log("changed img to " + "./input/360bmps/"+pad(filenum, 3)+".bmp")
 	}
 }
 
@@ -145,8 +145,9 @@ function initializeGrid(){
 			this.C.cells[nid].R = Math.floor(this.C.random() * 256)
 			// let lum = Math.floor(this.C.random() * this.C.cells[nid].B *0.4)
 			
-			this.C.cells[nid].G =Math.floor(this.C.random() * 256)
+			
 			this.C.cells[nid].B =Math.floor(this.C.random() * 256)
+			this.C.cells[nid].G = Math.floor(this.C.random() * Math.min(this.C.cells[nid].B, this.C.cells[nid].R))
 			// let lum = this.C.random()
 			// this.C.cells[nid].R = Math.floor(this.C.cells[nid].R * lum) 
 			// this.C.cells[nid].G = Math.floor(this.C.cells[nid].G * lum) 
