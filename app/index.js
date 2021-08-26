@@ -43,6 +43,7 @@ import ConnectivityConstraint from "../src/hamiltonian/ConnectivityConstraint.js
 import SoftConnectivityConstraint from "../src/hamiltonian/SoftConnectivityConstraint.js" 
 import LocalConnectivityConstraint from "../src/hamiltonian/LocalConnectivityConstraint.js" 
 import SoftLocalConnectivityConstraint from "../src/hamiltonian/SoftLocalConnectivityConstraint.js" 
+import ImageConstraint from "../src/hamiltonian/ImageConstraint.js" 
  
 import HardConstraint from "../src/hamiltonian/HardConstraint.js" 
 import HardVolumeRangeConstraint from "../src/hamiltonian/HardVolumeRangeConstraint.js" 
@@ -94,6 +95,7 @@ export {
 	SoftConnectivityConstraint,
 	LocalConnectivityConstraint,
 	SoftLocalConnectivityConstraint,
+	ImageConstraint,
 	HardConstraint,
 	HardVolumeRangeConstraint,
 	BarrierConstraint,
