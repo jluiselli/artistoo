@@ -2,6 +2,9 @@ misc/uptodate
 esdocs
 examples-dev
 examples-old
+*.png
+*.mp4
+*.bmp
 *.swp
 build.make
 node_modules
