@@ -1,5 +1,5 @@
 
-import auxiliary.process as process
+import auxiliary.processthread as process
 import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
@@ -11,6 +11,7 @@ import json
 import argparse
 
 options = keywords.getarguments()
+plt.rcParams['svg.fonttype'] = 'none'
 
 # mode = 'any'
 #  mode = "all"
@@ -75,7 +76,7 @@ for path in dfs:
     # sm.set_array([])
     # ax.figure.colorbar(sm)
     fig.tight_layout()
-    plt.savefig(keywords.nfile("traces/divisions/"+ path[-4:] +".png"), dpi=200)
+    plt.savefig(keywords.nfile("traces/divisions/"+ path[-4:] +".svg"))
     # plt.savefig(keywords.nfile("traces/evolvables"+ path[-4:] +".png"), dpi=200)
     plt.close()
     # print("just trying one currently!")

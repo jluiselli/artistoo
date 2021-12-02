@@ -11,23 +11,29 @@ import keywords
 
 sns.set(style="whitegrid", rc={'figure.figsize':(10,3)})
 options = keywords.getarguments()
+plt.rcParams['svg.fonttype'] = 'none'
 
 def select(timestep, time):
     timestep = json.loads(timestep)
     out = []
     for hostId, host in timestep.items():
-        out.append({"type":'host', "time":time, 'vol':host['vol'], 'total_vol':host['total_vol'],"id": hostId})
-        # for mitoId, mito in host['subcells'].items():
+        # print(host.keys())
+        #if "total_vol" in host: # i don't understand why this is necessary  TODO
+        outdct = {"type":'host', "time":time, 'vol':host['vol'], 'total_vol':host['vol'],"id": hostId}
+        if 'total_vol' in host:
+            outdct['total_vol'] = host['total_vol']
+        out.append(outdct)
+	
+	# for mitoId, mito in host['subcells'].items():
         #    out.append({"type":'mito', "time":time, 'vol':mito['vol'], "id":mitoId})
     return out
 
-# print(options.f)
 
-dfs = process.get(picklefname=keywords.nfile("volumes.pickle"),runs=keywords.getruns(),force=options.f, folder=keywords.getfoldername(), selector=select,  verbose=options.v,   sortbykeywordix=keywords.getkeywordix(), sortbylineix=keywords.getlineix(), load =options.l)
-dfs2 = process.get(picklefname="../210923_mutlifetime/processing/volumes.pickle",runs=keywords.getruns(),force=options.f, folder=keywords.getfoldername(), selector=select,  verbose=options.v,   sortbykeywordix=keywords.getkeywordix(), sortbylineix=keywords.getlineix(), load=options.l)
+dfs = process.get(picklefname=keywords.nfile("volumes2.pickle"),runs=keywords.getruns(),force=options.f, folder=keywords.getfoldername(), selector=select,  verbose=options.v,   sortbykeywordix=keywords.getkeywordix(), sortbylineix=keywords.getlineix(), load =options.l)
+# dfs2 = process.get(picklefname="../210923_mutlifetime/processing/volumes.pickle",runs=keywords.getruns(),force=options.f, folder=keywords.getfoldername(), selector=select,  verbose=options.v,   sortbykeywordix=keywords.getkeywordix(), sortbylineix=keywords.getlineix(), load=options.l)
 # print(dfs2.columns)
-for path in dfs2:
-    dfs[path] = dfs2[path]
+# for path in dfs2:
+#     dfs[path] = dfs2[path]
 
 # dfs = process.get(force=False, folder='./fisfus1', reverse=True,stop=1, selector=selectOnlyTime,  verbose=True,   sortbykeywordix=[("fission_rate", -1), ("fusion_rate", -1), ("deprecation_rate", -1)])
 # print (dfs.keys())
@@ -59,6 +65,7 @@ if True:
         #     continue
         df = df[(df["time"] > 1000)]
         df = df[(df["time"] % 100 == 0)]
+
         # df = df[(df["type"] == "mito")]
         # df = df.drop(columns=["type"])
         df['mito_vol'] = df['total_vol'] - df['vol']
@@ -109,17 +116,17 @@ if True:
     # meandf = pd.ariances)
     # alldf['time'] = df['time'].round(decimals=-3)
     # vardf['time'] = df['time'].round(decimals=-3)
-    
-    alldf = alldf.groupby(['time','NDNA_MUT_LIFETIME', 'path']).mean().reset_index()
+    alldf = alldf[(alldf['NDNA_MUT_LIFETIME'] == 0)]
+    # alldf = alldf.groupby(['time','NDNA_MUT_LIFETIME', 'path']).mean().reset_index()
     if options.v:
        print(alldf)
     fig, ax = plt.subplots()
-    g = sns.lineplot(data=alldf, x='time', y='fractional', hue="NDNA_MUT_LIFETIME", lw=1, palette="flare", ax=ax, alpha=0.5) 
+    g = sns.lineplot(data=alldf, x='time', y='fractional', hue="NDNA_MUT_LIFETIME", lw=1, palette="flare", ax=ax, legend=None) 
     # g = sns.scatterplot(data=alldf, x='time', y='n mito', hue="NDNA_MUT_LIFETIME",lw=1, palette="flare", ax=ax) 
     g.set_title("mean mitovol/totalvol through time")
     fig.tight_layout()
-    plt.savefig(keywords.nfile("all_fracvol_meanpaths.png"))
-    plt.savefig(keywords.nfile("all_fracvol_meanpaths.svg"))
+    plt.savefig(keywords.nfile("all_fracvol_meanpaths0mut.png"))
+    plt.savefig(keywords.nfile("all_fracvol_meanpaths0mut.svg"))
     plt.close()
     # fig, ax = plt.subplots()
     # g = sns.lineplot(data=vardf, x='time', y='vol', hue="path", lw=1, palette="plasma", ax=ax) 

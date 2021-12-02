@@ -23,11 +23,11 @@ def select(timestep, time):
 # print(options.f)
 
 dfs = process.get(picklefname=keywords.nfile("nmito.pickle"),runs=keywords.getruns(),force=options.f, folder=keywords.getfoldername(), selector=select,  verbose=options.v,   sortbykeywordix=keywords.getkeywordix(), sortbylineix=keywords.getlineix(), load = options.l)
-dfs2 = process.get(picklefname="../210923_mutlifetime/processing/nmito.pickle",runs=keywords.getruns(),force=options.f, folder='../210923_mutlifetime/', selector=select,  verbose=options.v,   sortbykeywordix=keywords.getkeywordix(), sortbylineix=keywords.getlineix(), load=options.l)
-# dfs2 = process.get(force=options.f, picklefname=keywords.nfile("evolvablesrev.pickle"),runs=keywords.getruns(),folder="../210927_mutrange2",  selector=select, reverse=True, stop=500,  sortbykeywordix=keywords.getkeywordix(), sortbylineix=keywords.getlineix(),verbose=options.v)
-print(dfs2.columns)
-for path in dfs2:
-    dfs[path] = dfs2[path]
+# dfs2 = process.get(picklefname="../210923_mutlifetime/processing/nmito.pickle",runs=keywords.getruns(),force=options.f, folder='../210923_mutlifetime/', selector=select,  verbose=options.v,   sortbykeywordix=keywords.getkeywordix(), sortbylineix=keywords.getlineix(), load=options.l)
+# # dfs2 = process.get(force=options.f, picklefname=keywords.nfile("evolvablesrev.pickle"),runs=keywords.getruns(),folder="../210927_mutrange2",  selector=select, reverse=True, stop=500,  sortbykeywordix=keywords.getkeywordix(), sortbylineix=keywords.getlineix(),verbose=options.v)
+# print(dfs2.columns)
+# for path in dfs2:
+#     dfs[path] = dfs2[path]
 
 alldf = []
 if True:
@@ -93,19 +93,20 @@ if True:
     variances = []
     
     # meandf = pd.ariances)
-    # alldf['time'] = df['time'].round(decimals=-3)
+    # alldf['time'] = df['time'].round(decimals=-2)
     # vardf['time'] = df['time'].round(decimals=-3)
     
-    alldf = alldf.groupby(['time','NDNA_MUT_LIFETIME', 'path']).mean().reset_index()
+    alldf=alldf[(alldf['NDNA_MUT_LIFETIME']==0)]
+    # alldf = alldf.groupby(['time','NDNA_MUT_LIFETIME', 'path']).mean().reset_index()
     if options.v:
        print(alldf)
     fig, ax = plt.subplots()
-    g = sns.lineplot(data=alldf, x='time', y='n mito', hue="NDNA_MUT_LIFETIME", lw=1, palette="flare", ax=ax, alpha=0.5) 
+    g = sns.lineplot(data=alldf, x='time', y='n mito', hue="NDNA_MUT_LIFETIME", lw=1, palette="flare", ax=ax, legend=None) 
     # g = sns.scatterplot(data=alldf, x='time', y='n mito', hue="NDNA_MUT_LIFETIME",lw=1, palette="flare", ax=ax) 
     g.set_title("mean N MITO through time")
     fig.tight_layout()
-    plt.savefig(keywords.nfile("all_nmito_meanpaths.png"))
-    plt.savefig(keywords.nfile("all_nmito_meanpaths.svg"))
+    plt.savefig(keywords.nfile("all_nmito_meanpaths0mut.png"))
+    plt.savefig(keywords.nfile("all_nmito_meanpaths0mut.svg"))
     plt.close()
     # fig, ax = plt.subplots()
     # g = sns.lineplot(data=vardf, x='time', y='vol', hue="path", lw=1, palette="plasma", ax=ax) 
