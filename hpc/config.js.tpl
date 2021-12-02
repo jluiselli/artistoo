@@ -68,7 +68,7 @@ let config = {
 		
 		MITO_SHRINK : 1,
 		MITOPHAGY_THRESHOLD: 0,
-		MITOPHAGY_SHRINK : 0,
+		MITOPHAGY_SHRINK : -10,
 		HOST_SHRINK : 5,
 		MITO_GROWTH_MAX : 9,
 		HOST_GROWTH_MAX : 9,
@@ -309,7 +309,7 @@ function getColor (cid) {
 	let no_cmap = false
 	if (cell instanceof CPM.SuperCell){
 		if (cell.dna_good){
-			if (colorby = "n_DNA"){
+			if (colorby == "n_DNA"){
 				return map_color(bluered,(cell.cellParameter("fusion_rate")* 416666) + 500)
 			}
 			return String(this.conf["CELLCOLOR"][cell.kind-1])
