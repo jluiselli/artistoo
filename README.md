@@ -1,3 +1,9 @@
+# Creative barrier branch
+
+Hey! This is my branch to add image constraints from .bmp files to artistoo! This is currently a joke/side project for me, so not all of the code is annotated fully, I will get to these in a bit. See examples/node/GraphicRenderer.js and src/hamiltonian/ImageConstraint for my current implementations.
+
+ Oane Gros
+
 # Artistoo (Artificial Tissue Toolbox)
 
 Artistoo (formerly called CPMjs) is a JavaScript library for building Cellular Potts Model (CPM) simulations that can be shared and explored in the web browser, without requiring installed software. Full documentation is available on [artistoo.net](https://artistoo.net).
