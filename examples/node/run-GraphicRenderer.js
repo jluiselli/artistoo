@@ -144,10 +144,10 @@ function initializeGrid(){
 			let nid = this.gm.seedCell( cellkind+1 );
 			this.C.cells[nid].R = Math.floor(this.C.random() * 256)
 			// let lum = Math.floor(this.C.random() * this.C.cells[nid].B *0.4)
-			
+			this.C.cells[nid].G =Math.floor(this.C.random() * 256)
 			
 			this.C.cells[nid].B =Math.floor(this.C.random() * 256)
-			this.C.cells[nid].G = Math.floor(this.C.random() * Math.min(this.C.cells[nid].B, this.C.cells[nid].R))
+			// this.C.cells[nid].G = Math.floor(this.C.random() * Math.min(this.C.cells[nid].B, this.C.cells[nid].R))
 			// let lum = this.C.random()
 			// this.C.cells[nid].R = Math.floor(this.C.cells[nid].R * lum) 
 			// this.C.cells[nid].G = Math.floor(this.C.cells[nid].G * lum) 
