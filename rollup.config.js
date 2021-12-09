@@ -10,7 +10,7 @@ export default [{
 	name: 'CPM'
   },
   plugins: [
-    eslint(),
+    eslint({"fix" : false}),
     resolve(),
     commonjs()
   ]
