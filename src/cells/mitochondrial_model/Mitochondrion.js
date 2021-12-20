@@ -321,12 +321,14 @@ class Mitochondrion extends SubCell {
 		}
         
 		/** Start new replication attempts and do translation events
-         * NOTE: replication only blocks translation on the first step, which is 
-		 * weird! 
-         * 
-         * NOTE2: it might be good to go back to mutex replication/translation 
+         * NOTE:  replication only blocks translation on the first step, which is 
+		 * weird! it might be good to go back to mutex replication/translation 
          * anyway as this is more like the biological system (although it is
          * harder with the proteolysis and division of replisome machinery)
+		 * 
+		 * NOTE2:
+		 * Translation does all proteins of this mtDNA copy - big assumption;
+		 * 
          */
 		for (let dna of this.DNA){
 			if (replicate_attempts + translate_attempts <= 0){
@@ -464,9 +466,9 @@ class Mitochondrion extends SubCell {
 		if( !(typeof window !== "undefined" && typeof window.document !== "undefined") ){
 			if (!this.fs){
 				this.fs = require("fs")
-			}    
+			}
 			this.fs.appendFileSync(logpath, objstring)
-		}   
+		}
 	}
 }
 

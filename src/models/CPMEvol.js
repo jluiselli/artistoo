@@ -67,9 +67,10 @@ class CPMEvol extends CPM {
 
 	/* ------------- MANIPULATING CELLS ON THE GRID --------------- */
 	/** Initiate a new {@link CellId} for a cell of {@link CellKind} "kind", and create elements
-	   for this cell in the relevant arrays. Overrides super to also add a new Cell object to track.
-	   @param {CellKind} kind - cellkind of the cell that has to be made.
-	   @return {CellId} newid of the new cell.*/
+	  * for this cell in the relevant arrays. Overrides super to also add a new Cell object to track.
+	  * @param {CellKind} kind - cellkind of the cell that has to be made.
+	  * @return {CellId} newid of the new cell.
+	*/
 	makeNewCellID ( kind ){
 		let newid = super.makeNewCellID(kind)
 		this.cells[newid] =new this.cellclasses[kind](this.conf, kind, newid, this)	
@@ -78,11 +79,12 @@ class CPMEvol extends CPM {
 
 	/** Calls a birth event in a new daughter Cell object, and hands 
 	 * the other daughter (as parent) on to the Cell.
-	   @param {CellId} childId - id of the newly created Cell object
-	   @param {CellId} parentId - id of the other daughter (that kept the parent id)*/
+	 * @param {CellId} childId - id of the newly created Cell object
+	 * @param {CellId} parentId - id of the other daughter (that kept the parent id)
+	*/
 	birth (childId, parentId, partition){
 		this.cells[childId].birth(this.cells[parentId], partition )
 	}
 }
- 
+
 export default CPMEvol

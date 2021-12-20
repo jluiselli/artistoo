@@ -4,7 +4,7 @@ import ParameterChecker from "./ParameterChecker.js"
 /** 
 	
 	 * @example
-	 
+	
 	*/
 class SubCellConstraint extends SoftConstraint {
 

@@ -488,12 +488,6 @@ class CPM extends GridBasedModel {
 			}
 		}  while (this.cellvolume.hasOwnProperty(newid))
 		this.cellvolume[newid] = 0
-		if (kind === undefined){
-			var fs = require("fs")
-			let stringbuffer = ""
-			stringbuffer += "Kind undefined in makeNewCellId \n"
-			fs.appendFileSync("./debug.log", stringbuffer)
-		}
 		this.setCellKind( newid, kind )
 		return newid
 	}
