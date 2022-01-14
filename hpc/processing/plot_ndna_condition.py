@@ -62,9 +62,12 @@ if options.v:
 alldf['frac'] = alldf['unmut']/alldf['n DNA']
 alldf['mutated'] = alldf['n DNA'] - alldf['unmut']
 
+print(len(alldf[(alldf['type'] == 'mito') & (alldf['n DNA']==0)]))
+print(len(alldf[(alldf['type'] == 'mito') & (alldf['n DNA'] == 0)])/len(alldf[(alldf['type'] == 'mito')]))
+
 # -- FINAL PLOTS N mtDNA --
-g= sns.histplot(data=alldf[(alldf['type'] == 'host')], x='n DNA', hue='setting',stat='percent', ax=ax,element='step', common_norm=False, bins=int(np.max(alldf[(alldf['type'] == 'host')]['n DNA'])))
-ax.set_xlim(0,150)
+# g= sns.histplot(data=alldf[(alldf['type'] == 'host')], x='n DNA', hue='setting',stat='percent', ax=ax,element='step', common_norm=False, bins=int(np.max(alldf[(alldf['type'] == 'host')]['n DNA'])))
+# ax.set_xlim(0,150)
 # g= sns.histplot(data=alldf[(alldf['type'] == 'mito')], x='n DNA', hue='setting',stat='percent', ax=ax,element='step', common_norm=False, bins=int(np.max(alldf[(alldf['type'] == 'mito')]['n DNA'])))
 # ax.set_xlim(0,10)
 
@@ -73,8 +76,8 @@ ax.set_xlim(0,150)
 # g= sns.histplot(data=alldf[(alldf['type'] == 'host')], x='frac', hue='setting',stat='percent',multiple='layer', ax=ax, common_norm=False, kde=True)
 # g= sns.histplot(data=alldf[(alldf['type'] == 'mito')], x='frac', hue='setting',stat='percent',multiple='layer', ax=ax, common_norm=False, bins=5, element="step", kde=True, kde_kws={"bw_adjust":2})
 
-plt.savefig(keywords.nfile("final_ndnahosts.png"))
-plt.savefig(keywords.nfile("final_ndnahosts.svg"))
+# plt.savefig(keywords.nfile("final_unmutfracmito.png"))
+# plt.savefig(keywords.nfile("final_unmutfracmito.svg"))
 plt.close()
 
 

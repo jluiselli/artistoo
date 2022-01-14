@@ -45,6 +45,7 @@ dfs = process.get(picklefname=keywords.nfile('mitodeath.pickle'),fname='deaths.t
 
 # pd.set_option('display.max_rows', None)
 alldf = []
+categorical = []
 for path in dfs:
     # print(dfs[path]['data'])
     df = pd.DataFrame.from_dict(dfs[path]['data'])
@@ -84,6 +85,13 @@ for path in dfs:
 
     df['perhost'] = 1/dfpopsize['hosts']
     df['permito'] = 1/dfpopsize['mitos']
+
+    title = "Host death through time\n"
+    for key, val in dfs[path].items():
+        if key != 'data':
+            # print(key, val)
+            df[key] = val
+            title += (key + " = " + str(val) + '\n')
     if options.v:
         print(df)
     # print(perhost.reset_index())
@@ -91,11 +99,14 @@ for path in dfs:
     alldf.append(df)
     
     # print(len(perhost), df[(df['type'] == 'host')].shape)
-    g1 = sns.histplot(data=df[(df['type'] == 'mito')], x='time',stat='frequency', ax=ax[0], weights='permito', bins=100)
+    g1 = sns.histplot(data=df[(df['type'] == 'mito')], x='time',stat='frequency', ax=ax[0], weights='permito', bins=20)
     ax[0].set_ylim(0, 0.0065)
     # g1 = sns.lineplot(data=df[(df['type'] == 'mito')], x='time',stat='density', ax=ax[0])
-    g2 = sns.histplot(data=df[(df['type'] == 'host')], x='time', stat='frequency' ,ax=ax[1], weights='perhost', bins=30)
+    g2 = sns.histplot(data=df[(df['type'] == 'host')], x='time', stat='frequency' ,ax=ax[1], weights='perhost', bins=10)
     ax[1].set_ylim(0, 0.00085)
+    df = df[(df['time'] >=3000)]
+    categorical.append({"type": "host", "death":df[(df['type']== 'host')].perhost.sum()/7000, "setting":dfs[path]['setting']})
+    categorical.append({"type": "mito", "death":df[(df['type']== 'mito')].permito.sum()/7000, "setting":dfs[path]['setting']})
     # fig, ax = plt.subplots()
     # g = sns.histplot(df, x="time", hue="type", element="step",stat="probability", common_norm=False,multiple='fill')
     
@@ -105,18 +116,18 @@ for path in dfs:
     # g2 = sns.histplot(data=df[(df['type'] == 'host')], x='time', ax=ax2, color=sns.color_palette()[1], element="step", alpha=0.6)
 
     # g = sns.lineplot(data=df, x='time', y='deathscorrected',  hue="type", lw=1, palette="colorblind", ax=ax) 
-    title = "Host death through time\n"
-    for key, val in dfs[path].items():
-        if key != 'data':
-            title += (key + " = " + str(val) + '\n')
+    # print(df[(df['type'] == 'host')].perhost.sum()/10000)
+    
     # fig.set_title(title, y=0.9)
     fig.suptitle(title)
     fig.tight_layout()
     # ax.title.set_y(0.5)
     fig.subplots_adjust(top=0.8)
-    plt.savefig(keywords.nfile("deaths/corrected"+ path[-4:] +".png"))
-    plt.savefig(keywords.nfile("deaths//svgs/corrected"+ path[-4:] +".svg"))
+    plt.savefig(keywords.nfile("deaths/corrected2" + path[-4:] +".png"))
+    plt.savefig(keywords.nfile("deaths//svgs/corrected2"+ path[-4:] +".svg"))
     plt.close()
+
+
 
 fig, ax = plt.subplots(nrows=2)
 ax[0].set_ylim(0, 0.0065)
@@ -125,15 +136,16 @@ ax[1].set_ylim(0, 0.00085)
 lstdf = alldf
 alldf = pd.concat(alldf, ignore_index=True)
 
+
 # ASSUMES ALL RUNS HAVE RUN AS LONG AS EACH OTHER!!!
 # best practice would be to div by time point how many unique runs have been there
-alldf['perhost'] /= len(lstdf)
-alldf['permito'] /= len(lstdf)
+# alldf['perhost'] /= len(lstdf)
+# alldf['permito'] /= len(lstdf)
 
 g1 = sns.histplot(data=alldf[(alldf['type'] == 'mito')], x='time',stat='frequency', ax=ax[0], weights='permito', bins=100)
 g2 = sns.histplot(data=alldf[(alldf['type'] == 'host')], x='time', stat='frequency' ,ax=ax[1], weights='perhost', bins=30)
-plt.savefig(keywords.nfile("allcorrectedmorebins.png"))
-plt.savefig(keywords.nfile("allcorrectedmorebins.svg"))
+plt.savefig(keywords.nfile("allcorrectedmorebins2.png"))
+plt.savefig(keywords.nfile("allcorrectedmorebins2.svg"))
 
 plt.close()
 fig, ax = plt.subplots(nrows=2)
@@ -142,5 +154,40 @@ ax[1].set_ylim(0, 0.00085)
 
 g1 = sns.histplot(data=alldf[(alldf['type'] == 'mito')], x='time',stat='frequency', ax=ax[0], weights='permito', bins=1)
 g2 = sns.histplot(data=alldf[(alldf['type'] == 'host')], x='time', stat='frequency' ,ax=ax[1], weights='perhost', bins=1)
-plt.savefig(keywords.nfile("allcorrected.png"))
-plt.savefig(keywords.nfile("allcorrected.svg"))
+plt.savefig(keywords.nfile("allcorrected2.png"))
+plt.savefig(keywords.nfile("allcorrected2.svg"))
+plt.close()
+
+fig, ax = plt.subplots(nrows=2)
+ax[0].set_ylim(0, 0.0065)
+ax[1].set_ylim(0, 0.00085)
+
+# alldf = alldf[(alldf['time'] >= 3000)]
+# # 7000 is time
+# mitomeans = {}
+# mitomeans["death"] = []
+# mitomeans["setting"] = []
+# for setting in pd.unique(alldf['setting']):
+#     print(setting)
+#     mitomeans["death"] += [alldf[(alldf['type'] == 'mito') & (alldf['setting']==setting)].permito.sum()/7000]
+#     mitomeans["setting"] += [str(setting)]
+# print(mitomeans)
+# hostmeans = {}
+# hostmeans["death"] = []
+# hostmeans["setting"] = []
+# for setting in pd.unique(alldf['setting']):
+#     print(setting)
+#     hostmeans["death"] += [alldf[(alldf['type'] == 'host') & (alldf['setting']==setting)].perhost.sum()/7000]
+#     hostmeans["setting"] += [str(setting)]
+# print(hostmeans)
+# ax[0].bar(mitomeans['setting'], mitomeans['death'])
+
+categorical = pd.DataFrame(categorical)
+print(categorical)
+g1 = sns.barplot(data=categorical[(categorical['type'] == "mito")], x="setting", y="death", ax=ax[0])
+g2 = sns.barplot(data=categorical[(categorical['type'] == "host")], x="setting", y="death", ax=ax[1])
+# g1 = sns.barplot(data=pd.DataFrame(mitomeans), x="setting", y="death", ax=ax[0])
+# g2 = sns.barplot(data=pd.DataFrame(hostmeans), x="setting", y="death", ax=ax[1])
+# g2 = sns.histplot(data=alldf[(alldf['type'] == 'host')], x='setting', stat='frequency' ,ax=ax[1], weights='perhost', bins=1)
+plt.savefig(keywords.nfile("allcorrectedcat.png"))
+plt.savefig(keywords.nfile("allcorrectedcat.svg"))
