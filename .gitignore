@@ -10,4 +10,10 @@ node_modules
 .idea
 .DS_store
 .external-ecmascript.js
-personal_stuff
+
+package-lock.json
+package.json
+hpc/config_save.js.tpl
+hpc/tmp
+hpc/tmpout.txt
+
