@@ -2,10 +2,10 @@
 
 
 path='./'
-path+=$1
+path+=$1 #First argument is path to main the folder
 path+="run%04d"
 # echo "$path/run%04d" $(($2))
-cd $(printf "$path" $(($2)))
+cd $(printf "$path" $(($2))) #Second argument is the nb of the run
 
 #cat ~/artistoo/build/artistoo-cjs.js
 # rm *.txt > tmpout
@@ -20,3 +20,12 @@ ffmpeg -y -r 60 -i Mitochondria-n_DNA-t%d0.png -pix_fmt yuv420p -c:v libx264 -cr
 ffmpeg -y -r 60 -i Mitochondria-oxphos_avg-t%d0.png -pix_fmt yuv420p -c:v libx264 -crf 18 -preset fast -level:v 4.0 -hide_banner -loglevel error -codec:a aac -nostdin   video_oxphos_$2.mp4 >tmpout.txt
 ffmpeg -y -i video_unmut_$2.mp4 -i video_ndna_$2.mp4 -i video_oxphos_$2.mp4 -filter_complex "[1:v][0:v]scale2ref=oh*mdar:ih[1v][0v];[2:v][0v]scale2ref=oh*mdar:ih[2v][0v];[0v][1v][2v]hstack=3,scale='2*trunc(iw/2)':'2*trunc(ih/2)'" -hide_banner -loglevel error -nostdin  video_all_$2.mp4
 find . -name "Mitochondria*.png" -delete 
+
+
+#USAGE :
+# Single run:
+# ./startany10.sh folder/ 0 #for run n°0
+# Multiple runs:
+# parallel ./startany10.sh folder/ ::: {1..n} & #for bash
+# parallel ./startany10.sh folder/ ::: (seq 1 n) & #for fish
+# (or for loop)
