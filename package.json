@@ -4,6 +4,7 @@
 	"dependencies": {
 		"braces": "^3.0.2",
 		"canvas": "^2.6.0",
+		"config": "^3.3.7",
 		"fs": "0.0.1-security",
 		"mersenne-twister": "^1.1.0",
 		"websocket": "^1.0.28"

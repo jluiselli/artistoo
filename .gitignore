@@ -16,4 +16,5 @@ package.json
 hpc/config_save.js.tpl
 hpc/tmp
 hpc/tmpout.txt
-
+hpc/test/
+hpc/testing_execo/
