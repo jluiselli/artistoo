@@ -42,7 +42,6 @@ popsizedfs = process.get(picklefname=keywords.nfile('popsizes.pickle'),fname='Mi
 dfs = process.get(picklefname=keywords.nfile('mitodeath.pickle'),fname='deaths.txt',runs=keywords.getruns(),force=options.f, folder=keywords.getfoldername(), selector=selectDeath,  verbose=options.v,   sortbykeywordix=keywords.getkeywordix(),load=options.l)
 
 
-
 # pd.set_option('display.max_rows', None)
 alldf = []
 categorical = []

@@ -13,7 +13,7 @@ let config = {
 	conf : {
 		// Basic CPM parameters
 		torus : [true,true],				// Should the grid have linked borders?
-		seed : <<random.randint(0,10000)>>,							// Seed for random number generation.
+		seed : SEED_NUMBER,							// Seed for random number generation.
 		T : 2,								// CPM temperature
         
     
@@ -36,7 +36,7 @@ let config = {
 		MTDNA_MUT_INIT: 0.002,
         MTDNA_MUT_ROS : 0.00005,
 		NDNA_MUT_REP : 0,
-        NDNA_MUT_LIFETIME : <<0, 0.000001, 0.000005, 0.00001>>,
+        NDNA_MUT_LIFETIME : NDNA_MUT_LIFETIME_PARAM,
 		INIT_HOST_V : 700,
 		INIT_OXPHOS : 10,
 		INIT_TRANSLATE : 10,
@@ -96,7 +96,7 @@ let config = {
 		// non-background cellkinds. 
 		// Runtime etc
 		BURNIN : 0,
-		RUNTIME : 600000,
+		RUNTIME : 6000,
 		RUNTIME_BROWSER : "Inf",
 		
 		// Visualization
