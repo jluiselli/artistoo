@@ -30,8 +30,9 @@ class Simulation {
 			simulation starts (let cells get their target volume before starting).
 		@param {number} simsettings.RUNTIME - number of MCS the simulation should run.
 			Only necessary if you plan to use the {@link run} method.
-		@param {number} [ simsettings.IMGFRAMERATE = 1 ]- draw the grid every [x] MCS.
+		@param {number} [ simsettings.IMGFRAMERATE = 1 ] - draw the grid every [x] MCS.
 		@param {number} [ simsettings.LOGRATE = 1 ] - log stats every [x] MCS.
+		@param {number} [ simsettings.SAVERATE = 1 ] - log stats every [x] MCS.
 		@param {object} [ simsettings.LOGSTATS = {browser:false,node:true} ] - 
 			whether stats should be logged in browser and node.
 		@param {boolean} [ simsettings.SAVEIMG = false ] - should images be saved? (node only).
@@ -88,6 +89,10 @@ class Simulation {
 		/** Log stats every [rate] MCS.
 		@type {number}*/
 		this.lograte = this.conf["LOGRATE"] || 1
+
+		/** Save sim every [rate] MCS.
+		@type {number}*/
+		this.saverate = this.conf["SAVERATE"] || 1
 		
 		/** See if code is run in browser or via node, which will be used
 			below to determine what the output should be.
@@ -347,6 +352,11 @@ class Simulation {
 				this.C.cellKind(cid) + "\t" + thecentroid.join("\t") )
 			
 		}
+
+	}
+
+	/* To be overridden by appropriate method */
+	saveSim(){
 
 	}
 	
