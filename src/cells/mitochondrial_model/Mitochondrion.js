@@ -1,7 +1,7 @@
 "use strict"
 
 import SubCell from "../SubCell.js" 
-import Complexes from "./Complexes.js"
+import ProteicComplex from "./ProteicComplex.js"
 import mtDNA from "./mtDNA.js" 
 import Products from "./Products.js" 
 
@@ -99,7 +99,6 @@ class Mitochondrion extends SubCell {
 		this.bad_products = new Products(this.conf, this.C)
 
 		this.complexes = []
-		this.bad_complexes = []
 		this.oxphos_cplx = 0
 		this.total_oxphos = 0
 		this.replicate_cplx = 0
@@ -189,11 +188,11 @@ class Mitochondrion extends SubCell {
          * do ∆V 
          */
 		let dV = 0
-		dV += this.oxphos * this.cellParameter("MITO_V_PER_OXPHOS")
+		dV += this.oxphos_cplx * this.cellParameter("MITO_V_PER_OXPHOS")
 		dV-= this.cellParameter("MITO_SHRINK")
 		dV = Math.min(this.cellParameter("MITO_GROWTH_MAX"), dV)
 		// optional mitophagy thresholding
-		if (this.oxphos < this.cellParameter("MITOPHAGY_THRESHOLD")) {
+		if (this.oxphos_cplx < this.cellParameter("MITOPHAGY_THRESHOLD")) {
 			dV -= this.cellParameter("MITOPHAGY_SHRINK")
 		}
 		if (this.closeToV()){
@@ -253,15 +252,15 @@ class Mitochondrion extends SubCell {
 	deprecateComplexes(){
 		let deleted_p = []
 		let destroyed_cplx = 0
-		for (let cplx in this.complexes){
-			deletep_p = cplx.deprecate(this.cellParameter('deprecation_rate'))
+		for (let cplx of this.complexes.values()){
+			deleted_p = cplx.deprecate(this.cellParameter("deprecation_rate"))
 			if (deleted_p != []){
 				// add the remaining proteins to the pull of products
 				for (let i = 0; i < cplx.length; i++){
-					if (i in cplx.bad_pos && not i in deleted_p){
+					if (i in cplx.bad_pos && !deleted_p.includes(i)){
 						this.bad_products[i+cplx.start]++
 					}
-					else if (not i in deleted_p) {
+					else if (!deleted_p.includes(i)) {
 						this.products[i+cplx.start]++
 					}
 				}
@@ -304,7 +303,7 @@ class Mitochondrion extends SubCell {
      */
 	tryIncrement(){
 		let total_products = this.sum_arr(this.products.arr, this.bad_products.arr).reduce((t, e) => t + e)
-		for ( let cplx in this.complexes ){
+		for ( let cplx of this.complexes.values() ){
 			total_products += cplx.length
 		}
 		return this.C.random() < (this.vol / total_products)
@@ -427,17 +426,19 @@ class Mitochondrion extends SubCell {
 	 * 
 	 * DESCRIPTION TO DO
      */
-	 assemble(type){
+	assemble(type){
+		let arr = []
+		let bad_arr = []
 		if (type == 0){	
-		arr = this.product.oxphos
-		bad_arr = this.bad_products.oxphos // copies
+			arr = this.products.oxphos
+			bad_arr = this.bad_products.oxphos // copies
 		}
 		else if (type == 1){
-			arr = this.product.translate
+			arr = this.products.translate
 			bad_arr = this.bad_products.translate // copies
 		}
 		else {
-			arr = this.product.replicate
+			arr = this.products.replicate
 			bad_arr = this.bad_products.replicate // copies
 		}
 		while (true){
@@ -463,10 +464,12 @@ class Mitochondrion extends SubCell {
 				}
 			}
 
-			cplx = new Complexes(this.conf, this.C, type, bad_pos)
+			this.complexes.push(new ProteicComplex(this.conf, this.C, type, bad_pos))
 			if ( type == 0)  { this.total_oxphos++ }
+			for (let cplx of this.complexes.values()){
+				cplx.deprecate(0)
+			}
 
-			this.complexes.push(cplx)
 		}
 	}
     
@@ -486,21 +489,6 @@ class Mitochondrion extends SubCell {
 		this.oxphos_q = this.oxphos_q.slice(-5)
 	}
 
-	// /**
-    //  * Makes assemblies with @function assemble for oxphos, translate and replicate, 
-    //  * lso calculates ROS and logs oxphos for averaging
-    //  * should only be called once per timestep, as this is not deterministic
-    //  */
-	// makeAssemblies(){
-	// 	this.oxphos = this.assemble(this.products.oxphos, this.bad_products.oxphos)/ (this.vol / 100) * this.conf["OXPHOS_PER_100VOL"]
-	// 	this.translate = this.assemble(this.products.translate, this.bad_products.translate)
-	// 	this.replicate = this.assemble(this.products.replicate, this.bad_products.replicate)
-	// 	// Both good and bad assemblies make ros, so the total number of assemblies (minimum of summed arrays) is total ros
-	// 	this.ros = Math.min.apply(Math, this.sum_arr(this.products.oxphos,this.bad_products.oxphos)) / (this.vol / 100) * this.conf["OXPHOS_PER_100VOL"]
-	// 	// this is queues over 5 timesteps for the oxphos_avg visualization
-	// 	this.oxphos_q.push(this.oxphos)
-	// 	this.oxphos_q = this.oxphos_q.slice(-5)
-	// }
 
 	/** take average of last 5 oxphos calculations */ 
 	get oxphos_avg() {
