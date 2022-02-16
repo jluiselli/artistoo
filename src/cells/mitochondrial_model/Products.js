@@ -9,7 +9,7 @@ class Products {
         this.C = C
     }
 
-    init(){
+    init(){ //fill in the cell with arbitrary initial products
         for (let i = 0 ; i < this.arr.length; i++){
             if (i < this.conf["N_OXPHOS"] ){
                 this.arr[i] = this.conf["INIT_OXPHOS"]

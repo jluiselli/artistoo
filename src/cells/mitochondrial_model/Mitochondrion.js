@@ -1,6 +1,7 @@
 "use strict"
 
 import SubCell from "../SubCell.js" 
+import Complexes from "./Complexes.js"
 import mtDNA from "./mtDNA.js" 
 import Products from "./Products.js" 
 
@@ -96,6 +97,13 @@ class Mitochondrion extends SubCell {
          * @type {Products}- a wrapper for an array of integers
          */
 		this.bad_products = new Products(this.conf, this.C)
+
+		this.complexes = []
+		this.bad_complexes = []
+		this.oxphos_cplx = 0
+		this.total_oxphos = 0
+		this.replicate_cplx = 0
+		this.translate_cplx = 0
 	}
 	
 	/**
@@ -124,7 +132,7 @@ class Mitochondrion extends SubCell {
 		/** stochastically divide products between daughters with rate partition */
 		this.divideProducts(parent.products, this.products, partition)
 		this.divideProducts(parent.bad_products, this.bad_products, partition)
-        
+
 		/** stochastically divide mtDNA copies between daughters with rate partition */
 		let new_parent = []
 		for (let dna of parent.DNA){
@@ -135,6 +143,17 @@ class Mitochondrion extends SubCell {
 			}
 		}
 		parent.DNA = new_parent
+
+		/** stochastically divide complexes between daughters with rate partition */
+		let new_complexes = []
+		for (let cplx of parent.complexes){
+			if (this.C.random() < partition){
+				this.complexes.push(cplx)
+			} else {
+				new_complexes.push(cplx)
+			}
+		}
+		parent.complexes = new_complexes
 
 		/** alter target volume */
 		this.V = parent.V * partition
@@ -186,6 +205,8 @@ class Mitochondrion extends SubCell {
 
 		/** do proteolysis */
 		this.deprecateProducts()
+		this.deprecateComplexes()
+		this.mutateDNA()
 
 		/** add newly produced products only once all import also has been created */
 		// importandcreate() - called by host, as this controls import!
@@ -213,14 +234,50 @@ class Mitochondrion extends SubCell {
 
 	/**
      * Remove products with rate 'deprecation rate' 
-     * Mutate DNA with ROS
      */
 	deprecateProducts(){
 		this.products.deprecate(this.cellParameter("deprecation_rate"))
 		this.bad_products.deprecate(this.cellParameter("deprecation_rate"))
-        
+	}
+
+	/**
+	 * Mutate DNA with ROS
+	 */
+	mutateDNA(){        
 		for (let dna of this.DNA.values()){
 			dna.mutate(this.cellParameter("MTDNA_MUT_ROS") * this.ros)
+		}
+	}
+
+
+	deprecateComplexes(){
+		let deleted_p = []
+		let destroyed_cplx = 0
+		for (let cplx in this.complexes){
+			deletep_p = cplx.deprecate(this.cellParameter('deprecation_rate'))
+			if (deleted_p != []){
+				// add the remaining proteins to the pull of products
+				for (let i = 0; i < cplx.length; i++){
+					if (i in cplx.bad_pos && not i in deleted_p){
+						this.bad_products[i+cplx.start]++
+					}
+					else if (not i in deleted_p) {
+						this.products[i+cplx.start]++
+					}
+				}
+				destroyed_cplx++
+			}
+		}
+		while ( destroyed_cplx >0 ){ // Very very dirty way to do it, but at least I'm quite sure it works
+			for (const [idx, cplx] of this.complexes.entries()){
+				if (cplx.deleted){
+					this.complexes = [...this.complexes.slice(0,idx), ...this.complexes.slice(idx+1,-1)]
+					destroyed_cplx--
+					if (cplx.type == 0){ this.oxphos_cplx-- }
+					else if (cplx.type == 1){ this.translate_cplx-- }
+					else if (cplx.type == 2){ this.replicate_cplx-- }
+				}
+			}
 		}
 	}
 
@@ -236,6 +293,7 @@ class Mitochondrion extends SubCell {
 		this.bad_products.arr = this.sum_arr(this.bad_products.arr, partner.bad_products.arr)
 
 		this.DNA = [...this.DNA, ...partner.DNA]
+		this.complexes = [...this.complexes, ...partner.complexes]
 		this.V += partner.V
 		partner.fusing = true // partner will be deleted - but does not die - this flags this process
 	}
@@ -245,7 +303,11 @@ class Mitochondrion extends SubCell {
      * @returns {Boolean} - whether the addition is successful
      */
 	tryIncrement(){
-		return this.C.random() < (this.vol /  this.sum_arr(this.products.arr, this.bad_products.arr).reduce((t, e) => t + e))
+		let total_products = this.sum_arr(this.products.arr, this.bad_products.arr).reduce((t, e) => t + e)
+		for ( let cplx in this.complexes ){
+			total_products += cplx.length
+		}
+		return this.C.random() < (this.vol / total_products)
 	}
 
 	/**
@@ -298,8 +360,8 @@ class Mitochondrion extends SubCell {
      * based on attempts gathered from @function makeAssemblies()
      */
 	repAndTranslate() {
-		if (this.DNA.length == 0 ){ return }
-		let replicate_attempts = this.replicate, translate_attempts = this.translate // shallow copies
+		if (this.DNA.length == 0 || this.complexes.length == 0 ){ return }
+		let replicate_attempts = this.replicate_cplx, translate_attempts = this.translate_cplx // shallow copies
 		// replication and translation machinery try to find DNA to execute on
 		/** shuffle DNA in place to make sure that ordering does not affect translation */
 		this.shuffle(this.DNA) 
@@ -362,44 +424,83 @@ class Mitochondrion extends SubCell {
      * @param {[Integer]} arr - shallow copy of good products of single use type
      * @param {[Integer]} bad_arr - shallow copy of bad products of single use type
      * @returns the number of productive assemblies made in this timestep
+	 * 
+	 * DESCRIPTION TO DO
      */
-	assemble(arr, bad_arr){
-		let assemblies = 0
-		/* eslint-disable no-constant-condition */
-		while (true) { 
-			// equates to while (Math.min(sum_arr(arr, bad_arr)) > 1 ), which can be precomputed; i just think this is prettier
-			let complete = 1
-			for (let  j= 0; j<arr.length; j++){
-				let all_j = arr[j] + bad_arr[j] 
-				if (all_j == 0){
-					return assemblies
-				}
-				if(this.C.random() < bad_arr[j]/all_j){
+	 assemble(type){
+		if (type == 0){	
+		arr = this.product.oxphos
+		bad_arr = this.bad_products.oxphos // copies
+		}
+		else if (type == 1){
+			arr = this.product.translate
+			bad_arr = this.bad_products.translate // copies
+		}
+		else {
+			arr = this.product.replicate
+			bad_arr = this.bad_products.replicate // copies
+		}
+		while (true){
+			let bad_pos = []
+			for (let j = 0; j<arr.length; j++){
+				let all_j = arr[j] + bad_arr[j]
+				if (all_j == 0){ return }
+				if (this.C.random() < bad_arr[j]/all_j){
 					bad_arr[j]--
-					complete = 0
-				} else {
-					arr[j]--
+					bad_pos.push(j)
+				}
+				else { arr[j]--	}
+			}
+			if (bad_pos == []){ 
+				if (type == 0) {
+					this.oxphos_cplx++ 
+				}
+				else if (type == 1){
+					this.translate_cplx++ 
+				}
+				else {
+					this.replicate_cplx++ 
 				}
 			}
-			assemblies += complete
+
+			cplx = new Complexes(this.conf, this.C, type, bad_pos)
+			if ( type == 0)  { this.total_oxphos++ }
+
+			this.complexes.push(cplx)
 		}
 	}
     
 	/**
-     * Makes assemblies with @function assemble for oxphos, translate and replicate, 
-     * lso calculates ROS and logs oxphos for averaging
-     * should only be called once per timestep, as this is not deterministic
-     */
+	 * Makes assemblies
+	 */
 	makeAssemblies(){
-		this.oxphos = this.assemble(this.products.oxphos, this.bad_products.oxphos)/ (this.vol / 100) * this.conf["OXPHOS_PER_100VOL"]
-		this.translate = this.assemble(this.products.translate, this.bad_products.translate)
-		this.replicate = this.assemble(this.products.replicate, this.bad_products.replicate)
+		this.assemble(0) // assemble oxphos
+		this.assemble(1) // assemble translate
+		this.assemble(2) // assemble replicate
+
 		// Both good and bad assemblies make ros, so the total number of assemblies (minimum of summed arrays) is total ros
-		this.ros = Math.min.apply(Math, this.sum_arr(this.products.oxphos,this.bad_products.oxphos)) / (this.vol / 100) * this.conf["OXPHOS_PER_100VOL"]
+		this.ros = this.total_oxphos / (this.vol / 100) * this.conf["OXPHOS_PER_100VOL"]
+		
 		// this is queues over 5 timesteps for the oxphos_avg visualization
-		this.oxphos_q.push(this.oxphos)
+		this.oxphos_q.push(this.oxphos_cplx)
 		this.oxphos_q = this.oxphos_q.slice(-5)
 	}
+
+	// /**
+    //  * Makes assemblies with @function assemble for oxphos, translate and replicate, 
+    //  * lso calculates ROS and logs oxphos for averaging
+    //  * should only be called once per timestep, as this is not deterministic
+    //  */
+	// makeAssemblies(){
+	// 	this.oxphos = this.assemble(this.products.oxphos, this.bad_products.oxphos)/ (this.vol / 100) * this.conf["OXPHOS_PER_100VOL"]
+	// 	this.translate = this.assemble(this.products.translate, this.bad_products.translate)
+	// 	this.replicate = this.assemble(this.products.replicate, this.bad_products.replicate)
+	// 	// Both good and bad assemblies make ros, so the total number of assemblies (minimum of summed arrays) is total ros
+	// 	this.ros = Math.min.apply(Math, this.sum_arr(this.products.oxphos,this.bad_products.oxphos)) / (this.vol / 100) * this.conf["OXPHOS_PER_100VOL"]
+	// 	// this is queues over 5 timesteps for the oxphos_avg visualization
+	// 	this.oxphos_q.push(this.oxphos)
+	// 	this.oxphos_q = this.oxphos_q.slice(-5)
+	// }
 
 	/** take average of last 5 oxphos calculations */ 
 	get oxphos_avg() {
@@ -435,11 +536,11 @@ class Mitochondrion extends SubCell {
 		mito["host"] = this.host
 		mito["vol"] = this.vol
 		mito["n DNA"] = this.DNA.length
-		mito["oxphos"] = this.oxphos
+		mito["oxphos"] = this.oxphos_cplx
 		mito["ros"] = this.ros
 		mito["oxphos_avg"] = this.oxphos_avg
-		mito["translate"] = this.translate
-		mito["replicate"] = this.replicate
+		mito["translate"] = this.translate_cplx
+		mito["replicate"] = this.replicate_cplx
 		mito["replisomes"] = this.n_replisomes
 		mito["type"] = "mito"
 		mito["time of birth"] = this.C.time_of_birth
