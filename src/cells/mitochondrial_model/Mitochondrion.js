@@ -254,7 +254,7 @@ class Mitochondrion extends SubCell {
 		let destroyed_cplx = 0
 		for (let cplx of this.complexes.values()){
 			deleted_p = cplx.deprecate(this.cellParameter("deprecation_rate"))
-			if (deleted_p != []){
+			if (deleted_p.length != 0){
 				// add the remaining proteins to the pull of products
 				for (let i = 0; i < cplx.length; i++){
 					if (i in cplx.bad_pos && !deleted_p.includes(i)){
@@ -267,7 +267,7 @@ class Mitochondrion extends SubCell {
 				destroyed_cplx++
 			}
 		}
-		while ( destroyed_cplx >0 ){ // Very very dirty way to do it, but at least I'm quite sure it works
+		while ( destroyed_cplx >0 ){ 
 			for (const [idx, cplx] of this.complexes.entries()){
 				if (cplx.deleted){
 					this.complexes = [...this.complexes.slice(0,idx), ...this.complexes.slice(idx+1,-1)]
@@ -469,7 +469,6 @@ class Mitochondrion extends SubCell {
 			for (let cplx of this.complexes.values()){
 				cplx.deprecate(0)
 			}
-
 		}
 	}
     
