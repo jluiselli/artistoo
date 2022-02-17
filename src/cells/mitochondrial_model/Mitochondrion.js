@@ -120,6 +120,7 @@ class Mitochondrion extends SubCell {
 		this.DNA = []
 		this.products = new Products(this.conf, this.C)
 		this.bad_products = new Products(this.conf, this.C)
+		this.complexes = []
 	}
 
 	/**
@@ -160,6 +161,9 @@ class Mitochondrion extends SubCell {
 		}
 		parent.complexes = new_complexes
 
+		parent.recountComplexes()
+		this.recountComplexes()
+
 		/** alter target volume */
 		this.V = parent.V * partition
 		parent.V *= (1-partition)
@@ -178,6 +182,38 @@ class Mitochondrion extends SubCell {
 		}
 
 		this.write("./deaths.txt", this.stateDct())
+	}
+
+
+	recountComplexes(){
+		let ox = 0; let tr = 0; let rep = 0
+		for (let i = 0; i<this.complexes.length; i++){
+			if (this.complexes[i].t == 0 && this.complexes[i].bad_pos.length == 0){
+				ox++
+			}
+			else if (this.complexes[i].t == 1 && this.complexes[i].bad_pos.length == 0){
+				tr++
+			}
+			else if (this.complexes[i].t == 2 && this.complexes[i].bad_pos.length == 0){
+				rep ++
+			}
+		}
+		this.oxphos_cplx = ox
+		this.translate_cplx = tr
+		this.replicate_cplx = rep
+	}
+
+
+	checkOxphos(){
+		console.log("ox cplx: ",this.oxphos_cplx)
+		let counter = 0
+		for (let i = 0; i<this.complexes.length; i++){
+			if (this.complexes[i].t == 0 && this.complexes[i].bad_pos.length == 0){
+				counter++
+			}
+		}
+		console.log("recount:",counter)
+		if (counter != this.oxphos_cplx){throw "err"}
 	}
 
 	/**
@@ -257,8 +293,8 @@ class Mitochondrion extends SubCell {
 
 	deprecateComplexes(){
 		let deleted_p = [] // temporary storage of the id of the protein that was suppressed
-		let destroyed_cplx = 0 // total number of destroyed complexes
-		for (let cplx of this.complexes.values()){
+		let destroyed_cplx = [] // total number of destroyed complexes
+		for (const [idx, cplx] of this.complexes.entries()){
 			deleted_p = cplx.deprecate(this.cellParameter("deprecation_rate"))
 			if (deleted_p.length != 0){
 				// add the remaining proteins to the pull of products
@@ -272,21 +308,22 @@ class Mitochondrion extends SubCell {
 						this.products[i+cplx.start]++
 					}
 				}
-				destroyed_cplx++
-			}
-		}
-		while ( destroyed_cplx >0 ){ // Loop as long as we have to find destroyed complexes
-			// There would be nicer ways to do this
-			for (const [idx, cplx] of this.complexes.entries()){
-				if (cplx.deleted){
-					this.complexes = [...this.complexes.slice(0,idx), ...this.complexes.slice(idx+1,-1)]
-					destroyed_cplx--
+				if (cplx.bad_pos.length == 0){ // Only good complexes were counted
 					if (cplx.t == 0){ this.oxphos_cplx-- }
-					else if (cplx.t == 1){ this.translate_cplx-- }
-					else if (cplx.t == 2){ this.replicate_cplx-- }
+						else if (cplx.t == 1){ this.translate_cplx-- }
+						else if (cplx.t == 2){ this.replicate_cplx-- }
+					destroyed_cplx.push(idx)
 				}
 			}
 		}
+		let acc = 0
+		for (let j =0; j<destroyed_cplx.length; j++){
+			let i=destroyed_cplx[j]
+
+			this.complexes = [...this.complexes.slice(0,i-acc), ...this.complexes.slice(i+1-acc)]
+			acc++
+		}
+
 	}
 
 	/**
@@ -305,6 +342,9 @@ class Mitochondrion extends SubCell {
 		this.complexes = [...this.complexes, ...partner.complexes]
 		this.V += partner.V
 		partner.fusing = true // partner will be deleted - but does not die - this flags this process
+		this.oxphos_cplx += partner.oxphos_cplx
+		this.translate_cplx += partner.translate_cplx
+		this.replicate_cplx += partner.replicate_cplx
 	}
 
 	/**
@@ -447,18 +487,19 @@ class Mitochondrion extends SubCell {
 			arr = this.products.replicate
 			bad_arr = this.bad_products.replicate // copies
 		}
-		while (true){ // while no position is empty of proteins
+
+		searchloop  : while (true){ // while no position is empty of proteins
 			let bad_pos = [] // record positions of bad proteins
 			for (let j = 0; j<arr.length; j++){
 				let all_j = arr[j] + bad_arr[j]
-				if (all_j == 0){ return }
+				if (all_j == 0){ break searchloop}
 				if (this.C.random() < bad_arr[j]/all_j){
 					bad_arr[j]--
 					bad_pos.push(j) 
 				}
 				else { arr[j]--	}
 			}
-			if (bad_pos == []){ 
+			if (bad_pos.length == 0){ 
 				if (t == 0) {
 					this.oxphos_cplx++ 
 				}
@@ -473,11 +514,9 @@ class Mitochondrion extends SubCell {
 			this.complexes.push(new ProteicComplex(this.conf, this.C, t, bad_pos))
 			if ( t == 0)  { this.total_oxphos++ }
 			for (let cplx of this.complexes.values()){
-				cplx.deprecate(0)
 			}
 		}
 	}
-    
 	/**
 	 * Makes assemblies
 	 */
