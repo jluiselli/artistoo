@@ -98,11 +98,16 @@ class Mitochondrion extends SubCell {
          */
 		this.bad_products = new Products(this.conf, this.C)
 
+		/**
+		 * Array containing all proteic complexes
+		 * @type {Array}
+		 */
 		this.complexes = []
-		this.oxphos_cplx = 0
-		this.total_oxphos = 0
-		this.replicate_cplx = 0
-		this.translate_cplx = 0
+
+		this.oxphos_cplx = 0 // Number of viable metabolic complexes
+		this.total_oxphos = 0 // Total number of metabolic complexes (for ROS production)
+		this.replicate_cplx = 0 // Number of viable replication complexes
+		this.translate_cplx = 0 // Number of viable translation complexes
 	}
 	
 	/**
@@ -250,31 +255,34 @@ class Mitochondrion extends SubCell {
 
 
 	deprecateComplexes(){
-		let deleted_p = []
-		let destroyed_cplx = 0
+		let deleted_p = [] // temporary storage of the id of the protein that was suppressed
+		let destroyed_cplx = 0 // total number of destroyed complexes
 		for (let cplx of this.complexes.values()){
 			deleted_p = cplx.deprecate(this.cellParameter("deprecation_rate"))
 			if (deleted_p.length != 0){
 				// add the remaining proteins to the pull of products
-				for (let i = 0; i < cplx.length; i++){
+				for (let i = 0; i < cplx.l; i++){
 					if (i in cplx.bad_pos && !deleted_p.includes(i)){
+						// If the protein was bad and is not deleted
 						this.bad_products[i+cplx.start]++
 					}
 					else if (!deleted_p.includes(i)) {
+						// If the protein was good and is not deleted
 						this.products[i+cplx.start]++
 					}
 				}
 				destroyed_cplx++
 			}
 		}
-		while ( destroyed_cplx >0 ){ 
+		while ( destroyed_cplx >0 ){ // Loop as long as we have to find destroyed complexes
+			// There would be nicer ways to do this
 			for (const [idx, cplx] of this.complexes.entries()){
 				if (cplx.deleted){
 					this.complexes = [...this.complexes.slice(0,idx), ...this.complexes.slice(idx+1,-1)]
 					destroyed_cplx--
-					if (cplx.type == 0){ this.oxphos_cplx-- }
-					else if (cplx.type == 1){ this.translate_cplx-- }
-					else if (cplx.type == 2){ this.replicate_cplx-- }
+					if (cplx.t == 0){ this.oxphos_cplx-- }
+					else if (cplx.t == 1){ this.translate_cplx-- }
+					else if (cplx.t == 2){ this.replicate_cplx-- }
 				}
 			}
 		}
@@ -285,6 +293,7 @@ class Mitochondrion extends SubCell {
      * combine Products 
      * combine target volume
      * combine mtDNA
+	 * combine Proteic complexes
      * @param {Mitochondrion} partner 
      */
 	fuse(partner) {
@@ -303,8 +312,10 @@ class Mitochondrion extends SubCell {
      */
 	tryIncrement(){
 		let total_products = this.sum_arr(this.products.arr, this.bad_products.arr).reduce((t, e) => t + e)
+		// number of free proteins
 		for ( let cplx of this.complexes.values() ){
-			total_products += cplx.length
+			total_products += cplx.l
+			// adding proteins from the complexes to the count
 		}
 		return this.C.random() < (this.vol / total_products)
 	}
@@ -416,24 +427,18 @@ class Mitochondrion extends SubCell {
 
     
 	/**
-     * Draws from two arrays of protein numbers the number of productive assemblies
-     * This takes a protein from every index - if all are good, the assembly is productive
-     * NOTE: do not hand the actual Products.arr, but only shallow copies, as this does alter the values in place 
-     * 
-     * @param {[Integer]} arr - shallow copy of good products of single use type
-     * @param {[Integer]} bad_arr - shallow copy of bad products of single use type
-     * @returns the number of productive assemblies made in this timestep
-	 * 
-	 * DESCRIPTION TO DO
+	 * DESCRIPTION TO DO 
+     * @param {Integer} t - Type of the proteic complex.
+	 * 0 = oxphos ; 1 = translate ; 2 = replicate 
      */
-	assemble(type){
+	assemble(t){
 		let arr = []
 		let bad_arr = []
-		if (type == 0){	
+		if (t == 0){	
 			arr = this.products.oxphos
 			bad_arr = this.bad_products.oxphos // copies
 		}
-		else if (type == 1){
+		else if (t == 1){
 			arr = this.products.translate
 			bad_arr = this.bad_products.translate // copies
 		}
@@ -441,22 +446,22 @@ class Mitochondrion extends SubCell {
 			arr = this.products.replicate
 			bad_arr = this.bad_products.replicate // copies
 		}
-		while (true){
-			let bad_pos = []
+		while (true){ // while no position is empty of proteins
+			let bad_pos = [] // record positions of bad proteins
 			for (let j = 0; j<arr.length; j++){
 				let all_j = arr[j] + bad_arr[j]
 				if (all_j == 0){ return }
 				if (this.C.random() < bad_arr[j]/all_j){
 					bad_arr[j]--
-					bad_pos.push(j)
+					bad_pos.push(j) 
 				}
 				else { arr[j]--	}
 			}
 			if (bad_pos == []){ 
-				if (type == 0) {
+				if (t == 0) {
 					this.oxphos_cplx++ 
 				}
-				else if (type == 1){
+				else if (t == 1){
 					this.translate_cplx++ 
 				}
 				else {
@@ -464,8 +469,8 @@ class Mitochondrion extends SubCell {
 				}
 			}
 
-			this.complexes.push(new ProteicComplex(this.conf, this.C, type, bad_pos))
-			if ( type == 0)  { this.total_oxphos++ }
+			this.complexes.push(new ProteicComplex(this.conf, this.C, t, bad_pos))
+			if ( t == 0)  { this.total_oxphos++ }
 			for (let cplx of this.complexes.values()){
 				cplx.deprecate(0)
 			}
