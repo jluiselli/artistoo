@@ -108,6 +108,7 @@ class Mitochondrion extends SubCell {
 		this.total_oxphos = 0 // Total number of metabolic complexes (for ROS production)
 		this.replicate_cplx = 0 // Number of viable replication complexes
 		this.translate_cplx = 0 // Number of viable translation complexes
+		this.makeAssemblies()
 	}
 	
 	/**
@@ -193,11 +194,11 @@ class Mitochondrion extends SubCell {
          * do ∆V 
          */
 		let dV = 0
-		dV += this.oxphos_cplx * this.cellParameter("MITO_V_PER_OXPHOS")
+		dV += this.oxphos * this.cellParameter("MITO_V_PER_OXPHOS")
 		dV-= this.cellParameter("MITO_SHRINK")
 		dV = Math.min(this.cellParameter("MITO_GROWTH_MAX"), dV)
 		// optional mitophagy thresholding
-		if (this.oxphos_cplx < this.cellParameter("MITOPHAGY_THRESHOLD")) {
+		if (this.oxphos < this.cellParameter("MITOPHAGY_THRESHOLD")) {
 			dV -= this.cellParameter("MITOPHAGY_SHRINK")
 		}
 		if (this.closeToV()){
@@ -486,10 +487,11 @@ class Mitochondrion extends SubCell {
 		this.assemble(2) // assemble replicate
 
 		// Both good and bad assemblies make ros, so the total number of assemblies (minimum of summed arrays) is total ros
+		this.oxphos = this.oxphos_cplx / (this.vol / 100) * this.conf["OXPHOS_PER_100VOL"]
 		this.ros = this.total_oxphos / (this.vol / 100) * this.conf["OXPHOS_PER_100VOL"]
 		
 		// this is queues over 5 timesteps for the oxphos_avg visualization
-		this.oxphos_q.push(this.oxphos_cplx)
+		this.oxphos_q.push(this.oxphos)
 		this.oxphos_q = this.oxphos_q.slice(-5)
 	}
 
