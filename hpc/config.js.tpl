@@ -351,10 +351,15 @@ function drawOnTop(){
 }
 
 let logpath = "./"+config['simsettings']["LOGPATH"]+'/'+config['simsettings']["EXPNAME"]+"log.txt"
+let mitlogpath = "./"+config['simsettings']["LOGPATH"]+'/Mit_'+config['simsettings']["EXPNAME"]+"log.txt"
+let hostlogpath = "./"+config['simsettings']["LOGPATH"]+'/Hosts_'+config['simsettings']["EXPNAME"]+"log.txt"
 let meanlogpath = "./"+config['simsettings']["LOGPATH"]+'/Mean_'+config['simsettings']["EXPNAME"]+"log.txt"
 
-if (fs.existsSync(logpath)){
-    fs.unlinkSync(logpath)
+if (fs.existsSync(mitlogpath)){
+    fs.unlinkSync(mitlogpath)
+}
+if (fs.existsSync(hostlogpath)){
+    fs.unlinkSync(hostlogpath)
 }
 if (fs.existsSync(meanlogpath)){
     fs.unlinkSync(meanlogpath)
@@ -365,8 +370,11 @@ if (fs.existsSync('./deaths.txt')){
 if (fs.existsSync('./divisions.txt')){
     fs.unlinkSync('./divisions.txt')
 }
+
 let stringbuffer = ""
 let meanstr = ""
+let mitstr = ""
+let hoststr = ""
 let prevdna = {}
 function logStats(){
     if (this.C.time <=200){
@@ -374,7 +382,8 @@ function logStats(){
     }
     jsonobj = {}
     let curdna = {}
-    let dict = {}
+    let meandict = {}
+    let subcells = {}
     let ncells = 0
     for( let cell of this.C.cells ){
         if (cell instanceof CPM.HostCell){
@@ -383,28 +392,26 @@ function logStats(){
             for (let item in jsonobj[cell.id]){
                 if (item == 'evolvables'){
                     for (let ev in jsonobj[cell.id]['evolvables']){
-                        if (ev in dict){
-                            dict[ev] += jsonobj[cell.id]['evolvables'][ev]
+                        if (ev in meandict){
+                            meandict[ev] += jsonobj[cell.id]['evolvables'][ev]
                         }
                         else {
-                            dict[ev] = jsonobj[cell.id]['evolvables'][ev]
+                            meandict[ev] = jsonobj[cell.id]['evolvables'][ev]
                         }
                     }
                 }
                 else{
-                    if (item in dict){
-                        dict[item] += jsonobj[cell.id][item]
+                    if (item in meandict){
+                        meandict[item] += jsonobj[cell.id][item]
                     }
                     else {
-                        dict[item] = jsonobj[cell.id][item]
+                        meandict[item] = jsonobj[cell.id][item]
                     }
                 }
             }
-            let host = jsonobj[cell.id]
-            host["subcells"] = {}
             for (let subcell of cell.subcells()){
-                host["subcells"][subcell.id] = subcell.stateDct()
-                let mito = host["subcells"][subcell.id]
+                subcells[subcell.id] = subcell.stateDct()
+                let mito = subcells[subcell.id]
                 mito["new DNA ids"] = 0
                 for (let [ix, dnaobj] of subcell.DNA.entries()){
                     curdna[dnaobj.id] = true
@@ -415,28 +422,67 @@ function logStats(){
             }
         }
     }
-    for (let item in dict){
-        dict[item]/= ncells
+    for (let item in meandict){
+        meandict[item]/= ncells
     }
     prevdna = curdna
     let timestr = String(  "\n%------------------------------ " + this.time + " ------------------------------\n")
     let objstr = JSON.stringify(jsonobj)
     stringbuffer += timestr+objstr
     if ((this.time / config['simsettings']['LOGRATE'] ) % config['simsettings']["FLUSHRATE"] == 0 ){
-if (!fs.existsSync(meanlogpath)){
-        for (let key in dict){
-            meanstr += key+","
+        if (!fs.existsSync(meanlogpath)){
+            for (let key in meandict){
+                meanstr += key+";"
+            }
+            meanstr += '\n'
         }
-        meanstr += '\n'
-    }
-    for (let key in dict){
-        meanstr += dict[key]+","
-    }
-    meanstr += '\n'
-        fs.appendFileSync(logpath, stringbuffer)
+        if (!fs.existsSync(mitlogpath)){
+            let i = 0
+            for (let key in subcells){
+                for (let key2 in subcells[key]){
+                    if (i==0){
+                        mitstr += key2+";"
+                    }
+                }
+				i++
+            }
+            mitstr += '\n'
+        }
+        if (!fs.existsSync(hostlogpath)){
+            let i = 0
+            for (let key in jsonobj){
+                for (let key2 in jsonobj[key]){
+                    if (i==0){
+                        hoststr += key2+";"
+                    }
+                }
+				i++
+            }
+            hoststr += '\n'
+        }
+        for (let key in meandict){
+            meanstr += meandict[key]+";"
+        }
+        for (let key in subcells){
+            for (let key2 in subcells[key]){
+                    mitstr += subcells[key][key2]+";"
+                }
+                mitstr += '\n'
+        }
+        for (let key in jsonobj){
+            for (let key2 in jsonobj[key]){
+                hoststr += jsonobj[key][key2]+";"
+            }
+            hoststr += '\n'
+        }
+        // fs.appendFileSync(logpath, stringbuffer)
         fs.appendFileSync(meanlogpath, meanstr)
-        stringbuffer = ""
-        meanstr =""
+        fs.appendFileSync(hostlogpath, hoststr)
+        fs.appendFileSync(mitlogpath, mitstr)
+        // stringbuffer = ""
+        meanstr = ""
+        mitstr = ""
+        hoststr = ""
     }
 }
 
