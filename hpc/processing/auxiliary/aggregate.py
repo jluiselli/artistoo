@@ -4,14 +4,33 @@ import reading as rd
 
 folder = sys.argv[1]
 is_mit = int(sys.argv[2])
+print("Do we also retrieve mitochondria ? ",is_mit)
 
 hosts, mit = pd.DataFrame(), pd.DataFrame()
 
 
 for f in os.listdir(folder):
-    k = f.replace('/',' ').split('_')
+    # k = f.replace('/',' ').split('_')
+    # i = iter(k)
+    # params = dict(zip(i,i))
+
+    # k = f.replace('/',' ').split('-')
+    # try:
+    #     k[7] = k[7]+'-'+k[8]
+    #     k = k[:8]+k[9:]
+    # except:
+    #     pass
+    # i = iter(k)
+    # params = dict(zip(i,i))
+
+    k = f.replace('/',' ').split('-')
+    try:
+        k[-2] = k[-2]+'-'+k[-1]
+    except:
+        pass
     i = iter(k)
     params = dict(zip(i,i))
+
 
     print(f)
     print(params)
@@ -19,12 +38,12 @@ for f in os.listdir(folder):
         if is_mit:
             hosts_tmp, mit_tmp = rd.readfile(fname='./'+folder+'/'+f+"/Mitochondrialog.txt",
                         start=10,
-                        exclude=['subcells','V','vol','parent','good','bads',
+                        exclude=['V','vol','parent','good','bads',
                                 'dna','type','n mito', 'total_oxphos'])
         else:
             hosts_tmp, mit_tmp = rd.readfile(fname='./'+folder+'/'+f+"/Mitochondrialog.txt",
                     start=10, 
-                    exclude=['V','vol','parent','good','bads',
+                    exclude=['subcells','V','vol','parent','good','bads',
                             'dna','type','n mito', 'total_oxphos'])
         
         for k in params:

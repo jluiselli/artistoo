@@ -56,6 +56,8 @@ def readfile(fname, verbose=True, start=None, stop=None,
                     except:
                         pass
             
+            if tmp_df['time'].iloc[0]%1000==1:
+                print("time:",tmp_df['time'].iloc[0])
             hosts = pd.concat([hosts, tmp_df], sort=False)
             line = ifs.readline()
 
