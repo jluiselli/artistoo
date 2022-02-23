@@ -221,6 +221,11 @@ class Mitochondrion extends SubCell {
      * should be called by host for orderly working
      */
 	update(){
+		/** do proteolysis - Put at the beginning to happen *after* fusion/fission */
+		this.deprecateProducts()
+		this.deprecateComplexes()
+		this.mutateDNA()
+
 		/** sets this timesteps oxphos, translate and replicate capability
          * which are drawn from the gene products pool
         */
@@ -244,11 +249,7 @@ class Mitochondrion extends SubCell {
 		/** replicate mtdna and translate mtdna into proteinbuffer */
 		this.repAndTranslate()
 
-		/** do proteolysis */
-		this.deprecateProducts()
-		this.deprecateComplexes()
-		this.mutateDNA()
-
+		
 		/** add newly produced products only once all import also has been created */
 		// importandcreate() - called by host, as this controls import!
 		// these lines are only here to show program flow
