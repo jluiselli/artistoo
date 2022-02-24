@@ -463,6 +463,7 @@ function logStats(){
         for (let key in meandict){
             meanstr += meandict[key]+";"
         }
+        meanstr += '\n'
         for (let key in subcells){
             for (let key2 in subcells[key]){
                     mitstr += subcells[key][key2]+";"
