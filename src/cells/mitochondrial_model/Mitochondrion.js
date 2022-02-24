@@ -205,14 +205,14 @@ class Mitochondrion extends SubCell {
 
 
 	checkOxphos(){
-		console.log("ox cplx: ",this.oxphos_cplx)
+		// console.log("ox cplx: ",this.oxphos_cplx)
 		let counter = 0
 		for (let i = 0; i<this.complexes.length; i++){
 			if (this.complexes[i].t == 0 && this.complexes[i].bad_pos.length == 0){
 				counter++
 			}
 		}
-		console.log("recount:",counter)
+		// console.log("recount:",counter)
 		if (counter != this.oxphos_cplx){throw "err"}
 	}
 
@@ -222,9 +222,6 @@ class Mitochondrion extends SubCell {
      */
 	update(){
 		/** do proteolysis - Put at the beginning to happen *after* fusion/fission */
-		this.deprecateProducts()
-		this.deprecateComplexes()
-		this.mutateDNA()
 
 		/** sets this timesteps oxphos, translate and replicate capability
          * which are drawn from the gene products pool
@@ -249,6 +246,9 @@ class Mitochondrion extends SubCell {
 		/** replicate mtdna and translate mtdna into proteinbuffer */
 		this.repAndTranslate()
 
+		this.deprecateProducts()
+		this.deprecateComplexes()
+		this.mutateDNA()
 		
 		/** add newly produced products only once all import also has been created */
 		// importandcreate() - called by host, as this controls import!
@@ -311,8 +311,8 @@ class Mitochondrion extends SubCell {
 				}
 				if (cplx.bad_pos.length == 0){ // Only good complexes were counted
 					if (cplx.t == 0){ this.oxphos_cplx-- }
-						else if (cplx.t == 1){ this.translate_cplx-- }
-						else if (cplx.t == 2){ this.replicate_cplx-- }
+					else if (cplx.t == 1){ this.translate_cplx-- }
+					else if (cplx.t == 2){ this.replicate_cplx-- }
 					destroyed_cplx.push(idx)
 				}
 			}
@@ -514,8 +514,6 @@ class Mitochondrion extends SubCell {
 
 			this.complexes.push(new ProteicComplex(this.conf, this.C, t, bad_pos))
 			if ( t == 0)  { this.total_oxphos++ }
-			for (let cplx of this.complexes.values()){
-			}
 		}
 	}
 	/**
