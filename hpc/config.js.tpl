@@ -54,10 +54,13 @@ let config = {
         REPLICATE_TIME: 30,
         fission_rate : 0.00002,
         fusion_rate : 0.00025,
+        rep: 19,
+        rep2: 0,
         evolvables: {"fission_rate": {"sigma" : 0.000001}, 
                     "fusion_rate":{"sigma" : 0.00003}, 
                     "HOST_V_PER_OXPHOS":{"sigma" : 0.025}, 
-                    "host_division_volume":{"sigma" : 75, "lower_bound" : 2, "upper_bound":5000}
+                    "host_division_volume":{"sigma" : 75, "lower_bound" : 2, "upper_bound":5000},
+                    "rep": {"sigma" : 0.5},
          } ,
         
         deprecation_rate : 0.05,
@@ -453,7 +456,14 @@ function logStats(){
             for (let key in jsonobj){
                 for (let key2 in jsonobj[key]){
                     if (i==0){
-                        hoststr += key2+";"
+                        if (key2 == "evolvables"){
+                            for (let key3 in jsonobj[key][key2]){
+                                hoststr += "evolvables_"+key3+";"
+                            }
+                        }
+                        else {
+                            hoststr += key2+";"
+                        }
                     }
                 }
 				i++
@@ -472,7 +482,14 @@ function logStats(){
         }
         for (let key in jsonobj){
             for (let key2 in jsonobj[key]){
-                hoststr += jsonobj[key][key2]+";"
+                if (key2 == "evolvables"){
+                    for (let key3 in jsonobj[key][key2]){
+                        hoststr += jsonobj[key][key2][key3]+";"
+                    }
+                }
+                else {
+                    hoststr += jsonobj[key][key2]+";"
+                }
             }
             hoststr += '\n'
         }

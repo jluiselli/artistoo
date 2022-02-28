@@ -25,6 +25,7 @@ for f in os.listdir(folder):
     try:
         hosts_tmp = pd.read_csv('./'+folder+'/'+f+'/Hosts_Mitochondrialog.txt', sep=';', low_memory=False)
         mit_tmp = pd.read_csv('./'+folder+'/'+f+'/Mit_Mitochondrialog.txt', sep=';', low_memory=False)
+        print(hosts_tmp.iloc[0]['evolvables'])
        
         
         for k in params:
@@ -36,12 +37,6 @@ for f in os.listdir(folder):
     
     except:
         pass
-
-try:
-    for key in hosts.iloc[0]['evolvables'].keys():
-        hosts[str(key)] = [hosts.iloc[i]['evolvables'][str(key)] for i in range(len(hosts))]
-except:
-    pass
 
 hosts.to_csv(folder+'/hosts.csv')
 mit.to_csv(folder+'/mit.csv')
