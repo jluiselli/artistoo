@@ -13,8 +13,9 @@ folder = sys.argv[1]
 params = sys.argv[2:]
 
 try:
-    hosts=pd.read_csv(folder+'/hosts.csv')
+    hosts=pd.read_csv(folder+'/hosts.csv', low_memory=False)
     hosts = hosts.sample(frac=.15)
+    print(hosts)
 except:
     print("Data must have been aggregated with aggregate.py before")
 
@@ -27,7 +28,10 @@ if not os.path.isdir(folder+'/processing/'):
 usual_colors = ['tab:blue', 'tab:orange', 'tab:green','tab:purple','tab:red',
 'tab:pink','tab:brown'] 
 try:
+    print(hosts.iloc[1]['evolvables'])
+    print(hosts.columns)
     evolvables = ast.literal_eval(hosts.iloc[1]['evolvables']).keys()
+    print(evolvables)
     hosts['path']=""
 
     hosts['growth_rate']=hosts['growth_rate'].replace({15:1.5, 5:0.5})

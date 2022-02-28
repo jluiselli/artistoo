@@ -25,18 +25,18 @@ for f in os.listdir(folder):
     try:
         hosts_tmp = pd.read_csv('./'+folder+'/'+f+'/Hosts_Mitochondrialog.txt', sep=';', low_memory=False)
         mit_tmp = pd.read_csv('./'+folder+'/'+f+'/Mit_Mitochondrialog.txt', sep=';', low_memory=False)
-        print(hosts_tmp.iloc[0]['evolvables'])
        
         
         for k in params:
-            hosts_tmp[k] = float(params[k])
-            mit_tmp[k] = float(params[k])
-        
+            hosts_tmp[k] = params[k]
+            mit_tmp[k] = params[k]
+
         hosts = pd.concat([hosts, hosts_tmp], sort=False)
         mit = pd.concat([mit, mit_tmp], sort=False)
     
     except:
         pass
 
-hosts.to_csv(folder+'/hosts.csv')
-mit.to_csv(folder+'/mit.csv')
+print(hosts)
+hosts.to_csv(folder+'/hosts.csv', sep=";")
+mit.to_csv(folder+'/mit.csv', sep=";")

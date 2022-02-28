@@ -63,5 +63,5 @@ try:
 except:
     pass
 
-hosts.to_csv(folder+'/hosts.csv')
-mit.to_csv(folder+'/mit.csv')
+hosts.to_csv(folder+'/hosts.csv',sep=";")
+mit.to_csv(folder+'/mit.csv',sep=";")
