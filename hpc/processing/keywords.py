@@ -5,7 +5,7 @@ import argparse
 import os
 
 # TODO make all code accept lists of folders
-def getfoldername():
+def getfoldername(default):
     args= getarguments()
     if args.filename == None:
         return "../tmp"
@@ -36,12 +36,12 @@ def getkeywordix():
                 # ("fission_rate", -1), 
                 # ("fusion_rate", -1), 
                 ("seed", -7),
-                ("rep", -1),
-                ("NDNA_MUT_LIFETIME", -1),
+                # ("rep", -1),
+                # ("NDNA_MUT_LIFETIME", -1),
                 # ("SIGMA_REP", -1),
                 # ("division_volume", -1), 
                 # ("N_REPLICATE",-1), 
-                # ("deprecation_rate",-1),
+                ("deprecation_rate",-1),
                 # ("FACTOR_HOSTSHRINK_OVERFLOW", -1),
                 # ("MITO_V_PER_OXPHOS", -1),
                 # ("HOST_SHRINK", -1),

@@ -3,6 +3,7 @@ import pandas as pd
 from file_read_backwards import FileReadBackwards
 from multiprocessing.dummy import Pool as ThreadPool
 from functools import partial
+import random as rd
 
 
 
@@ -20,6 +21,10 @@ def readfile(fname, verbose=True, start=None, stop=None,
     mit = pd.DataFrame()
 
     while line:
+        if rd.random() < 0.9:
+            line = ifs.readline()
+            it += 1
+            continue
         if (start != None and it < start):
             line = ifs.readline()
             it += 1
@@ -35,7 +40,8 @@ def readfile(fname, verbose=True, start=None, stop=None,
 
             if 'subcells' in exclude:
                 for key in exclude:
-                    tmp_df.pop(key)
+                    if key!='subcells':
+                        tmp_df.pop(key)
                 hosts = pd.concat([hosts, tmp_df], sort=False)
                 line = ifs.readline()
                 continue
@@ -56,8 +62,8 @@ def readfile(fname, verbose=True, start=None, stop=None,
                     except:
                         pass
             
-            if tmp_df['time'].iloc[0]%1000==1:
-                print("time:",tmp_df['time'].iloc[0])
+            if tmp_df['time'].iloc[0]%500==1:
+                print(fname, "time:",tmp_df['time'].iloc[0])
             hosts = pd.concat([hosts, tmp_df], sort=False)
             line = ifs.readline()
 
