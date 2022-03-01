@@ -37,14 +37,14 @@ for f in os.listdir(folder):
         if is_mit:
             hosts_tmp, mit_tmp = rd.readfile(fname='./'+folder+'/'+f+"/Mitochondrialog.txt",
                         start=10,
-                        exclude=['V','vol','parent','good','bads',
-                                'dna','type','n mito', 'total_oxphos'])
+                        exclude=['parent','good','bads',
+                                'dna','type'])
             print(hosts_tmp)
         else:
             hosts_tmp, mit_tmp = rd.readfile(fname='./'+folder+'/'+f+"/Mitochondrialog.txt",
                     start=10, 
-                    exclude=['subcells','V','vol','parent','good','bads',
-                            'dna','type','n mito', 'total_oxphos'])
+                    exclude=['subcells','parent','good','bads',
+                            'dna','type'])
         
         for k in params:
             hosts_tmp[k] = float(params[k])
@@ -52,7 +52,8 @@ for f in os.listdir(folder):
         
         hosts = pd.concat([hosts, hosts_tmp], sort=False)
         mit = pd.concat([mit, mit_tmp], sort=False)
-        mit.to_csv(folder+'/mit.csv')
+        if is_mit:
+            mit.to_csv(folder+'/mit.csv')
     
     except:
         pass
@@ -63,5 +64,7 @@ try:
 except:
     pass
 
-hosts.to_csv(folder+'/hosts.csv',sep=";")
-mit.to_csv(folder+'/mit.csv',sep=";")
+if is_mit:
+    mit.to_csv(folder+'/mit.csv',sep=";")
+else:
+    hosts.to_csv(folder+'/hosts.csv',sep=";")
