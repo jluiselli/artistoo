@@ -38,7 +38,7 @@ for f in os.listdir(folder):
             hosts_tmp, mit_tmp = rd.readfile(fname='./'+folder+'/'+f+"/Mitochondrialog.txt",
                         start=10,
                         exclude=['parent','good','bads',
-                                'dna','type'])
+                                'dna','type'], rate=0.25)
             print(hosts_tmp)
         else:
             hosts_tmp, mit_tmp = rd.readfile(fname='./'+folder+'/'+f+"/Mitochondrialog.txt",
