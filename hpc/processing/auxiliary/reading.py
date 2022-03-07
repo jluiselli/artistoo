@@ -42,8 +42,7 @@ def readfile(fname, verbose=True, start=None, stop=None,
 
                 if 'subcells' in exclude:
                     for key in exclude:
-                        if key!='subcells':
-                            tmp_df.pop(key)
+                        tmp_df.pop(key)
                     hosts = pd.concat([hosts, tmp_df], sort=False)
                     line = ifs.readline()
                     continue
