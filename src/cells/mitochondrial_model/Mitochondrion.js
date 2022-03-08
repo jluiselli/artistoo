@@ -204,18 +204,6 @@ class Mitochondrion extends SubCell {
 	}
 
 
-	checkOxphos(){
-		// console.log("ox cplx: ",this.oxphos_cplx)
-		let counter = 0
-		for (let i = 0; i<this.complexes.length; i++){
-			if (this.complexes[i].t == 0 && this.complexes[i].bad_pos.length == 0){
-				counter++
-			}
-		}
-		// console.log("recount:",counter)
-		if (counter != this.oxphos_cplx){throw "err"}
-	}
-
 	/**
      * update loop of Mitochondrion
      * should be called by host for orderly working
@@ -514,6 +502,21 @@ class Mitochondrion extends SubCell {
 
 			this.complexes.push(new ProteicComplex(this.conf, this.C, t, bad_pos))
 			if ( t == 0)  { this.total_oxphos++ }
+		}
+		// Recording changes
+		if (t == 0){
+			let good = [...this.products.translate, ...this.products.replicate]
+			this.products.arr = [...arr, ...good]
+			// this.products = [...arr, ...this.products.translate, ...this.products.replicate]
+			this.bad_products.arr = [...bad_arr, ...this.bad_products.translate, ...this.bad_products.replicate]
+		}
+		else if (t == 1){
+			this.products.arr = [...this.products.oxphos, ...arr, ...this.products.replicate]
+			this.bad_products.arr = [...this.bad_products.oxphos, ...bad_arr, ...this.bad_products.replicate]
+		}
+		else {
+			this.products.arr = [...this.products.oxphos, ...this.products.translate, ...arr]
+			this.bad_products.arr = [...this.bad_products.oxphos, ...this.bad_products.translate, ...bad_arr]
 		}
 	}
 	/**
