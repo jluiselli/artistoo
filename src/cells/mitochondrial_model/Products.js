@@ -49,6 +49,10 @@ class Products {
         return this.sum(this.replicate)
     }
 
+    get total(){
+        return this.sum(this.arr)
+    }
+
     deprecate(chance){
         for ( let ix = 0; ix < this.arr.length; ix++){
             this.arr[ix] -= this.binomial(this.arr[ix], chance)

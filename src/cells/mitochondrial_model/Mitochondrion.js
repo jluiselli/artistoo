@@ -169,6 +169,7 @@ class Mitochondrion extends SubCell {
 		parent.V *= (1-partition)
 		//unused assemblies that cause less visualization errors:
 		this.makeAssemblies()
+		parent.makeAssemblies()
 	}
 
 	/**
@@ -203,6 +204,33 @@ class Mitochondrion extends SubCell {
 		this.replicate_cplx = rep
 	}
 
+
+	checkComplexes(){
+		let ox = 0; let tr = 0; let rep = 0
+		for (let i = 0; i<this.complexes.length; i++){
+			if (this.complexes[i].t == 0 && this.complexes[i].bad_pos.length == 0){
+				ox++
+			}
+			else if (this.complexes[i].t == 1 && this.complexes[i].bad_pos.length == 0){
+				tr++
+			}
+			else if (this.complexes[i].t == 2 && this.complexes[i].bad_pos.length == 0){
+				rep ++
+			}
+		}
+		if (this.oxphos_cplx != ox){
+			console.log("wrong number of oxphos cplx")
+			throw " "
+		}
+		if (this.translate_cplx != tr){
+			console.log("wrong number of translation cplx")
+			throw " "
+		}
+		if (this.replicate_cplx != rep){
+			console.log("wrong number of replication cplx")
+			throw " "
+		}
+	}
 
 	/**
      * update loop of Mitochondrion
@@ -288,21 +316,21 @@ class Mitochondrion extends SubCell {
 			if (deleted_p.length != 0){
 				// add the remaining proteins to the pull of products
 				for (let i = 0; i < cplx.l; i++){
-					if (i in cplx.bad_pos && !deleted_p.includes(i)){
+					if (cplx.bad_pos.includes(i) && !deleted_p.includes(i)){
 						// If the protein was bad and is not deleted
-						this.bad_products[i+cplx.start]++
+						this.bad_products.arr[i+cplx.start]++
 					}
 					else if (!deleted_p.includes(i)) {
 						// If the protein was good and is not deleted
-						this.products[i+cplx.start]++
+						this.products.arr[i+cplx.start]++
 					}
 				}
 				if (cplx.bad_pos.length == 0){ // Only good complexes were counted
 					if (cplx.t == 0){ this.oxphos_cplx-- }
 					else if (cplx.t == 1){ this.translate_cplx-- }
 					else if (cplx.t == 2){ this.replicate_cplx-- }
-					destroyed_cplx.push(idx)
 				}
+				destroyed_cplx.push(idx)
 			}
 		}
 		let acc = 0
@@ -505,9 +533,7 @@ class Mitochondrion extends SubCell {
 		}
 		// Recording changes
 		if (t == 0){
-			let good = [...this.products.translate, ...this.products.replicate]
-			this.products.arr = [...arr, ...good]
-			// this.products = [...arr, ...this.products.translate, ...this.products.replicate]
+			this.products.arr = [...arr, ...this.products.translate, ...this.products.replicate]
 			this.bad_products.arr = [...bad_arr, ...this.bad_products.translate, ...this.bad_products.replicate]
 		}
 		else if (t == 1){
@@ -530,7 +556,7 @@ class Mitochondrion extends SubCell {
 		// Both good and bad assemblies make ros, so the total number of assemblies (minimum of summed arrays) is total ros
 		this.oxphos = this.oxphos_cplx / (this.vol / 100) * this.conf["OXPHOS_PER_100VOL"]
 		this.ros = this.total_oxphos / (this.vol / 100) * this.conf["OXPHOS_PER_100VOL"]
-		
+
 		// this is queues over 5 timesteps for the oxphos_avg visualization
 		this.oxphos_q.push(this.oxphos)
 		this.oxphos_q = this.oxphos_q.slice(-5)

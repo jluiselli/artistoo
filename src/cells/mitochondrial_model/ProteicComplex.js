@@ -33,7 +33,7 @@ class ProteicComplex {
         while (k > 0){
             this.deleted = true
             let prot = this.C.ran(0,this.l-1)
-            while (prot in deleted_p){
+            while (deleted_p.includes(prot)){
                 prot = this.C.ran(0,this.l-1)
             }
             deleted_p.push(prot)
