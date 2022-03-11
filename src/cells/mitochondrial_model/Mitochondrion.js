@@ -187,7 +187,7 @@ class Mitochondrion extends SubCell {
 
 
 	recountComplexes(){
-		let ox = 0; let tr = 0; let rep = 0
+		let ox = 0; let tr = 0; let rep = 0; let tot_ox = 0
 		for (let i = 0; i<this.complexes.length; i++){
 			if (this.complexes[i].t == 0 && this.complexes[i].bad_pos.length == 0){
 				ox++
@@ -198,10 +198,14 @@ class Mitochondrion extends SubCell {
 			else if (this.complexes[i].t == 2 && this.complexes[i].bad_pos.length == 0){
 				rep ++
 			}
+			if (this.complexes[i].t == 0){
+				tot_ox++
+			}
 		}
 		this.oxphos_cplx = ox
 		this.translate_cplx = tr
 		this.replicate_cplx = rep
+		this.total_oxphos = tot_ox
 	}
 
 
@@ -330,6 +334,7 @@ class Mitochondrion extends SubCell {
 					else if (cplx.t == 1){ this.translate_cplx-- }
 					else if (cplx.t == 2){ this.replicate_cplx-- }
 				}
+				if (cplx.t == 0){ this.total_oxphos-- }
 				destroyed_cplx.push(idx)
 			}
 		}
@@ -362,6 +367,7 @@ class Mitochondrion extends SubCell {
 		this.oxphos_cplx += partner.oxphos_cplx
 		this.translate_cplx += partner.translate_cplx
 		this.replicate_cplx += partner.replicate_cplx
+		this.total_oxphos += partner.total_oxphos
 	}
 
 	/**
