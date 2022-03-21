@@ -603,7 +603,7 @@ class Mitochondrion extends SubCell {
 		mito["host"] = this.host
 		mito["vol"] = this.vol
 		mito["n DNA"] = this.DNA.length
-		mito["oxphos"] = this.oxphos_cplx
+		mito["oxphos"] = this.oxphos
 		mito["ros"] = this.ros
 		mito["oxphos_avg"] = this.oxphos_avg
 		mito["translate"] = this.translate_cplx
