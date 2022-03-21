@@ -102,17 +102,15 @@ for subfolder in subfolders:
 
             lineage.plot.scatter(x='time', y=col, alpha=0.9, s=10, ax=ax)
 
-            Gmean = [gmean(lineage[lineage['time']==t][col]) for t in lineage['time'].unique()]
             Mean = [np.mean(lineage[lineage['time']==t][col]) for t in lineage['time'].unique()]
 
             plt.plot(lineage['time'].unique(), Mean, color='tab:red')  
-            plt.plot(lineage['time'].unique(), Gmean, color='tab:green')
             plt.plot(pd.DataFrame(lineage['time'].unique()).rolling(50).mean(),
                 pd.DataFrame(Mean).rolling(50).mean(),
                 color='tab:orange', linewidth=3)
 
             try:
-                ax.set_ylim(min(lineage[col]), max(lineage[col]))
+                ax.set_ylim(0.99*min(lineage[col]), 1.01*max(lineage[col]))
             except:
                 pass
             ax.set_ylabel(col)
@@ -120,7 +118,7 @@ for subfolder in subfolders:
             ax.set_title(col+" over time for the lineage")
 
             fig.tight_layout()
-            fig.savefig(folder+'/processing/'+subfolder+'/'+col+'_lineage.png',dpi=600)
+            fig.savefig(folder+'/processing/'+subfolder+'/'+col+'_lineage.png')
             plt.close(fig)
     
     
@@ -131,7 +129,7 @@ for subfolder in subfolders:
     plt.scatter(lineage['time'].unique(), mit_vol)
   
     try:
-        ax.set_ylim(min(mit_vol), max(mit_vol))
+        ax.set_ylim(0.99*min(mit_vol), 1.01*max(mit_vol))
     except:
         pass
     ax.set_ylabel(col)
@@ -139,5 +137,5 @@ for subfolder in subfolders:
     ax.set_title(col+" over time for the lineage")
 
     fig.tight_layout()
-    fig.savefig(folder+'/processing/'+subfolder+'/'+col+'_lineage.png',dpi=600)
+    fig.savefig(folder+'/processing/'+subfolder+'/'+col+'_lineage.png')
     plt.close(fig)
