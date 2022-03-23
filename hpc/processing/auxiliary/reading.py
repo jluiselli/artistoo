@@ -67,3 +67,44 @@ def readfile(fname, verbose=True, start=None, stop=None,
 
     ifs.close()
     return hosts, mit
+
+
+
+def read_deaths_births(fname, verbose=True, start=None, stop=None):
+    if not os.path.isfile(fname) or os.path.getsize(fname) == 0:
+        if verbose:
+            print("Cannot see: " + fname + " or it is empty")
+        return
+
+    ifs = open(fname)
+    line = ifs.readline()
+    it = 0
+    data = pd.DataFrame()
+
+    while line:
+        if (start != None and it < start):
+            line = ifs.readline()
+            it += 1
+            continue
+        if (stop != None and it > stop):
+            break
+
+        if line[0] == "{":
+            it += 1
+            read = json.loads(line)
+
+            tmp_df = pd.DataFrame.from_dict(read, orient='index')
+            tmp_df = tmp_df.T
+            
+            if tmp_df['time'].iloc[0]%1000==1:
+                print("time:",tmp_df['time'].iloc[0])
+
+            tmp_df = tmp_df[['time','type']]
+            data = pd.concat([data, tmp_df], sort=False)
+            line = ifs.readline()
+        elif line[0] != "{":
+            it += 1
+            line = ifs.readline()
+
+    ifs.close()
+    return data

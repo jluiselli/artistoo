@@ -70,6 +70,9 @@ for subfolder in subfolders:
         lastgener = df[df['time']==max(df['time'])]
         host_ids = list(lastgener['host_id'].unique())
         parents_ids = list(lastgener['parent'].unique())
+        for p_id in parents_ids:
+            if p_id in host_ids:
+                host_ids.remove(p_id)
 
 
         for t in reversed(df['time'].unique()):
@@ -86,6 +89,8 @@ for subfolder in subfolders:
                 host_df = tmp[tmp['host_id']==h_id]
                 if host_df.empty:
                     host_ids.remove(h_id)
+                else:
+                    lineage = pd.concat([lineage, host_df])
             if len(host_ids)==0 or len(parents_ids) == 0:
                 print("NO MORE CELLS TO TRACK ! ERROR !")
                 raise ERROR
