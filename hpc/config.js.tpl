@@ -1,5 +1,5 @@
-let CPM = require("../../../build/artistoo-cjs.js")
-let ColorMap = require("../../../examples/node/colormap-cjs.js")
+let CPM = require("../../build/artistoo-cjs.js")
+let ColorMap = require("../../examples/node/colormap-cjs.js")
  
 "use strict"
 
@@ -385,10 +385,9 @@ function drawOnTop(){
     this.Cim.ctx.strokeText(colorby + " " + now, 10, 35);
 }
 
-let logpath = "./"+config['simsettings']["LOGPATH"]+'/'+config['simsettings']["EXPNAME"]+"log.txt"
 let mitlogpath = "./"+config['simsettings']["LOGPATH"]+'/Mit_'+config['simsettings']["EXPNAME"]+"log.txt"
 let hostlogpath = "./"+config['simsettings']["LOGPATH"]+'/Hosts_'+config['simsettings']["EXPNAME"]+"log.txt"
-let meanlogpath = "./"+config['simsettings']["LOGPATH"]+'/Mean_'+config['simsettings']["EXPNAME"]+"log.txt"
+let complogpath = "./competition_log.txt"
 
 if (fs.existsSync(mitlogpath)){
     fs.unlinkSync(mitlogpath)
@@ -396,8 +395,8 @@ if (fs.existsSync(mitlogpath)){
 if (fs.existsSync(hostlogpath)){
     fs.unlinkSync(hostlogpath)
 }
-if (fs.existsSync(meanlogpath)){
-    fs.unlinkSync(meanlogpath)
+if (fs.existsSync(complogpath)){
+    fs.unlinkSync(complogpath)
 }
 if (fs.existsSync('./deaths.txt')){
     fs.unlinkSync('./deaths.txt')
@@ -409,10 +408,9 @@ if (fs.existsSync('./competition.txt')){
     fs.unlinkSync('./competition.txt')
 }
 
-let stringbuffer = ""
-let meanstr = ""
 let mitstr = ""
 let hoststr = ""
+let compstr = ""
 let prevdna = {}
 function logStats(){
     if (this.C.time <=200){
@@ -420,33 +418,14 @@ function logStats(){
     }
     jsonobj = {}
     let curdna = {}
-    let meandict = {}
     let subcells = {}
     let ncells = 0
+    compstr += this.time + ";"
     for( let cell of this.C.cells ){
         if (cell instanceof CPM.HostCell){
+            compstr += cell.kind.toString()+","
             ncells++
             jsonobj[cell.id] = cell.stateDct()
-            for (let item in jsonobj[cell.id]){
-                if (item == 'evolvables'){
-                    for (let ev in jsonobj[cell.id]['evolvables']){
-                        if (ev in meandict){
-                            meandict[ev] += jsonobj[cell.id]['evolvables'][ev]
-                        }
-                        else {
-                            meandict[ev] = jsonobj[cell.id]['evolvables'][ev]
-                        }
-                    }
-                }
-                else{
-                    if (item in meandict){
-                        meandict[item] += jsonobj[cell.id][item]
-                    }
-                    else {
-                        meandict[item] = jsonobj[cell.id][item]
-                    }
-                }
-            }
             for (let subcell of cell.subcells()){
                 subcells[subcell.id] = subcell.stateDct()
                 let mito = subcells[subcell.id]
@@ -460,20 +439,9 @@ function logStats(){
             }
         }
     }
-    for (let item in meandict){
-        meandict[item]/= ncells
-    }
+    compstr += "\n"
     prevdna = curdna
-    let timestr = String(  "\n%------------------------------ " + this.time + " ------------------------------\n")
-    let objstr = JSON.stringify(jsonobj)
-    stringbuffer += timestr+objstr
     if ((this.time / config['simsettings']['LOGRATE'] ) % config['simsettings']["FLUSHRATE"] == 0 ){
-        if (!fs.existsSync(meanlogpath)){
-            for (let key in meandict){
-                meanstr += key+";"
-            }
-            meanstr += '\n'
-        }
         if (!fs.existsSync(mitlogpath)){
             let i = 0
             for (let key in subcells){
@@ -505,10 +473,6 @@ function logStats(){
             }
             hoststr += '\n'
         }
-        for (let key in meandict){
-            meanstr += meandict[key]+";"
-        }
-        meanstr += '\n'
         for (let key in subcells){
             for (let key2 in subcells[key]){
                     mitstr += subcells[key][key2]+";"
@@ -528,12 +492,9 @@ function logStats(){
             }
             hoststr += '\n'
         }
-        // fs.appendFileSync(logpath, stringbuffer)
-        fs.appendFileSync(meanlogpath, meanstr)
         fs.appendFileSync(hostlogpath, hoststr)
         fs.appendFileSync(mitlogpath, mitstr)
-        // stringbuffer = ""
-        meanstr = ""
+        fs.appendFileSync(complogpath, compstr)
         mitstr = ""
         hoststr = ""
     }
