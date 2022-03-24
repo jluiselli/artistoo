@@ -1,5 +1,5 @@
-let CPM = require("../../build/artistoo-cjs.js")
-let ColorMap = require("../../examples/node/colormap-cjs.js")
+let CPM = require("../../../build/artistoo-cjs.js")
+let ColorMap = require("../../../examples/node/colormap-cjs.js")
  
 "use strict"
 
