@@ -211,12 +211,22 @@ class HostCell extends SuperCell {
 	 * @param {Object} dct - output object
 	 */
 	write(logpath, dct){
-		let objstring = JSON.stringify(dct) + "\n"
 		if(!( typeof window !== "undefined" && typeof window.document !== "undefined" )){
 			if (!this.fs){
 				this.fs = require("fs")
-			}    
-			this.fs.appendFileSync(logpath, objstring)
+			}
+			let bufstr = ""    
+			if (!this.fs.existsSync(logpath)){
+				for (let key in dct){
+					bufstr += key+";"
+				}
+				bufstr += '\n'
+			}
+			for (let key in dct){
+            bufstr += dct[key]+";"
+       		}
+			bufstr += "\n" 
+			this.fs.appendFileSync(logpath, bufstr)
 		}   
 	}
 }
