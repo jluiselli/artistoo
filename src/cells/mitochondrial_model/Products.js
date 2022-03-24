@@ -55,6 +55,32 @@ class Products {
         }
     }
 
+    mutate(chance){
+        let change_arr = []
+        for ( let ix = 0; ix < this.arr.length; ix++){
+            change_arr += [this.binomial(this.arr[ix], chance)]
+        }
+        return change_arr
+    }
+
+    add(arr){
+        if (!(arr.length == this.arr.length)){
+            throw ""
+        }
+        for ( let ix = 0; ix < this.arr.length; ix++){
+            this.arr[ix] += parseInt(arr[ix])
+        }
+    }
+
+    remove(arr){
+        if (!(arr.length == this.arr.length)){
+            throw ""
+        }
+        for ( let ix = 0; ix < this.arr.length; ix++){
+            this.arr[ix] -= parseInt(arr[ix])
+        }
+    }
+
     /* eslint-disable */
     binomial(n, p){
         let log_q = Math.log(1.0-p), k = 0, sum = 0

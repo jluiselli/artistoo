@@ -218,10 +218,12 @@ class Mitochondrion extends SubCell {
 	deprecateProducts(){
 		this.products.deprecate(this.cellParameter("deprecation_rate"))
 		this.bad_products.deprecate(this.cellParameter("deprecation_rate"))
-        
-		for (let dna of this.DNA.values()){
+		for (let dna of this.DNA.values()){ // DNA mutation
 			dna.mutate(this.cellParameter("MTDNA_MUT_ROS") * this.ros)
 		}
+		let mutated_prot = this.products.mutate(Math.min(0.9999,this.cellParameter("PROT_MUT_ROS") * this.ros))
+		this.products.remove(mutated_prot)
+		this.bad_products.add(mutated_prot)
 	}
 
 	/**
