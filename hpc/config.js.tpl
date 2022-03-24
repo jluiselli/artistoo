@@ -1,5 +1,5 @@
-let CPM = require("../../../build/artistoo-cjs.js")
-let ColorMap = require("../../../examples/node/colormap-cjs.js")
+let CPM = require("../../build/artistoo-cjs.js")
+let ColorMap = require("../../examples/node/colormap-cjs.js")
  
 "use strict"
 
@@ -13,18 +13,20 @@ let config = {
     conf : {
         // Basic CPM parameters
         torus : [true,true],                // Should the grid have linked borders?
-        seed : 43874,                            // Seed for random number generation.
+        seed : 8473984,                            // Seed for random number generation.
         T : 2,                                // CPM temperature
         
     
-        CELLS : ["empty", CPM.HostCell, CPM.Mitochondrion], 
+        CELLS : ["empty", CPM.HostCell, CPM.HostCell, CPM.Mitochondrion], 
           
-        J_INT:  [ [15,15], 
-                [  15,15] ],
+        J_INT:  [ [15,15,15], 
+                  [15,15,15],
+                  [15,15,15] ],
 
-        J_EXT:  [     [15,50,1500], 
-                [50,750,1500], 
-                [1500, 1500,15000] ],
+        J_EXT:  [ [15,  50,  50,  1500], 
+                  [50,  750, 750, 1500], 
+                  [50,  750, 750, 1500],
+                  [1500,1500,1500,15000]],
 
         
         N_OXPHOS : 5, 
@@ -52,18 +54,19 @@ let config = {
         // First value is always cellkind 0 (the background) and is often not used.
 
         REPLICATE_TIME: 30,
-        fission_rate : 0.00002,
-        fusion_rate : 0.00025,
-        rep: 19,
+        fission_rate : [0.000013,0.00003],
+        fusion_rate : [0.00077,0.00021],
+        rep: [23.8,12.8],
         rep2: 0,
-        evolvables: {"fission_rate": {"sigma" : 0.000001}, 
-                    "fusion_rate":{"sigma" : 0.00003}, 
-                    "HOST_V_PER_OXPHOS":{"sigma" : 0.025}, 
-                    "host_division_volume":{"sigma" : 75, "lower_bound" : 2, "upper_bound":5000},
-                    "rep": {"sigma" : 0.5},
+        evolvables: {
+                    // "fission_rate": {"sigma" : 0.000001}, 
+                    // "fusion_rate":{"sigma" : 0.00003}, 
+                    // "HOST_V_PER_OXPHOS":{"sigma" : 0.025}, 
+                    // "host_division_volume":{"sigma" : 75, "lower_bound" : 2, "upper_bound":5000},
+                    // "rep": {"sigma" : 0.5},
          } ,
         
-        deprecation_rate : 0.05,
+        deprecation_rate : 0.1,
         
         MITO_SHRINK : 1,
         MITOPHAGY_THRESHOLD: 0,
@@ -72,7 +75,7 @@ let config = {
         MITO_GROWTH_MAX : 9,
         HOST_GROWTH_MAX : 9,
         MITO_V_PER_OXPHOS : 2,
-        HOST_V_PER_OXPHOS : 0.3,
+        HOST_V_PER_OXPHOS : [0.35,0.15],
     
         VOLCHANGE_THRESHOLD : 10,
         SELECTIVE_FUSION: false,
@@ -80,9 +83,9 @@ let config = {
         MITO_PARTITION : 0.5,
 
         // VolumeConstraint parameters
-        LAMBDA_V : [0, 1, 1],                // VolumeConstraint importance per cellkind
-        V : [0,502, 200],                    
-        host_division_volume: 2000,
+        LAMBDA_V : [0, 1, 1, 1],                // VolumeConstraint importance per cellkind
+        V : [0,502, 502, 200],                    
+        host_division_volume: [2274,3421],
     },
     
     // Simulation setup and configuration: this controls stuff like grid initialization,
@@ -90,18 +93,18 @@ let config = {
     simsettings : { 
     
         // Cells on the grid
-        NRCELLS : [20, 5],                        // Number of cells to seed for all
+        NRCELLS : [10, 10, 5],                        // Number of cells to seed for all
         // non-background cellkinds. 
         // Runtime etc
         BURNIN : 0,
-        RUNTIME : 20000,
+        RUNTIME : 500,
         RUNTIME_BROWSER : "Inf",
         
         // Visualization
         CANVASCOLOR : "EEEEEE",
-        CELLCOLOR : ["9E60BE", "FFAAEA"],
-        SHOWBORDERS : [true, true],                // Should cellborders be displayed?
-        BORDERCOL : ["666666", "666666"],                // color of the cell borders
+        CELLCOLOR : ["9E60BE", "FFAAEA",  "FFEAAA"],
+        SHOWBORDERS : [true, true, true],                // Should cellborders be displayed?
+        BORDERCOL : ["666666", "666666", "666666"],                // color of the cell borders
         zoom : 1,                            // zoom in on canvas with this factor.
         
         // Output images
@@ -137,6 +140,7 @@ sim = new CPM.Simulation( config, custommethods )
 const {
     performance
   } = require('perf_hooks');
+const { ConsoleReporter } = require("jasmine")
 let starttime = performance.now()
 
 
@@ -149,10 +153,10 @@ function seedSubCells(){
     } 
     let cellpixelsbyid = sim.C.getStat(CPM.PixelsByCell)
     for (let cid of Object.keys(cellpixelsbyid)) {
-        if (sim.C.cellKind(cid) == 1){
-            for (let i =0; i < sim.conf["NRCELLS"][1]; i++){
+        if (sim.C.cellKind(cid) == 1 || sim.C.cellKind(cid) == 2){
+            for (let i =0; i < sim.conf["NRCELLS"][2]; i++){
                 let coord = cellpixelsbyid[cid][Math.floor(sim.C.mt.random()*cellpixelsbyid[cid].length)]
-                let nid = sim.gm.seedCellAt( 2, coord )
+                let nid = sim.gm.seedCellAt( 3, coord )
                 sim.C.cells[nid].host = cid
             }
         }
@@ -183,12 +187,12 @@ function postMCSListener(){
     for( let cid of this.C.cellIDs() ){
         let cell = this.C.cells[cid]
         if (cell instanceof CPM.SubCell){
-            if (this.C.random() < (cell.cellParameter("fission_rate") * cell.vol) && cell.vol > 2){
+            if (this.C.random() < (cell.cellParameter("fission_rate")[this.C.cells[cell.host].kind-1] * cell.vol) && cell.vol > 2){
                 this.C.cells[cell.host].fission_events++
                 this.gm.divideCell(cid, cell.cellParameter('MITO_PARTITION'))
 
             } 
-            if (this.C.random() <cell.cellParameter("fusion_rate") ){
+            if (this.C.random() <cell.cellParameter("fusion_rate")[this.C.cells[cell.host].kind-1] ){
                 let fuser = pickFuser(cell)
                 if (fuser !== undefined){
                     this.C.cells[cell.host].fusion_events++
@@ -197,7 +201,7 @@ function postMCSListener(){
             }
         }
         if (cell instanceof CPM.SuperCell){
-            if (cell.vol > cell.cellParameter('host_division_volume')){
+            if (cell.vol > cell.cellParameter('host_division_volume')[cell.kind-1]){
                 let nid = cell.divideHostCell(cid)
                 cell.write("divisions.txt", {"daughter":this.C.cells[nid].stateDct(), "parent":cell.stateDct()})
             }
@@ -246,6 +250,11 @@ function initializeGrid(){
         } else {
             this.gm.seedCell(1)
         }
+    }
+
+    nrcells = this.conf["NRCELLS"][1], i  // Second type of cells
+    for( i = 0; i < nrcells; i++ ){            
+        this.gm.seedCell(2)
     }
 }
 

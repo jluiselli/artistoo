@@ -112,7 +112,7 @@ class HostCell extends SuperCell {
 		this.total_vol = this.vol + mito_vol
 
 		/** Makes new replication products, and distributes based on volume-weighted draw */
-		let new_products = (this.total_oxphos*this.cellParameter("rep")) - (this.total_oxphos*this.total_oxphos*this.cellParameter("rep2"))
+		let new_products = (this.total_oxphos*this.cellParameter("rep")[this.kind-1]) - (this.total_oxphos*this.total_oxphos*this.cellParameter("rep2"))
 		volcumsum = volcumsum.map(function(item) {return item/ mito_vol}) // is an array form 0 - 1 with mito.vol/total_mito_vol 
 		for (let i = 0; i < new_products; i++){
 			// pick random existing DNA index
@@ -125,7 +125,7 @@ class HostCell extends SuperCell {
 
 		/** Calculates and adds ∆V, if it can no longer shrink, distributes shrinkage among subcells */
 		let dV = 0
-		dV += this.total_oxphos *this.cellParameter("HOST_V_PER_OXPHOS")
+		dV += this.total_oxphos *this.cellParameter("HOST_V_PER_OXPHOS")[this.kind-1]
 		dV -= this.cellParameter("HOST_SHRINK")
 		dV = Math.min(this.cellParameter("HOST_GROWTH_MAX"), dV)
 		if (this.closeToV() ){
