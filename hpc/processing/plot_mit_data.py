@@ -38,7 +38,7 @@ usual_colors = ['tab:blue', 'tab:orange', 'tab:green','tab:purple','tab:red',
 
 mit['path']=""
 
-mit['growth_rate']=mit['growth_rate'].replace({15:1.5, 5:0.5})
+# mit['growth_rate']=mit['growth_rate'].replace({15:1.5, 5:0.5})
 mit['bad_oxphos']=mit['ros']-mit['oxphos']
 
 interest_params = ['V','vol','n DNA','oxphos','ros','bad_oxphos', 'translate', 'replicate', 'replisomes', 'unmut']

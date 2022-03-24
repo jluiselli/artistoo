@@ -22,6 +22,10 @@ try:
     except:
         pass
     hosts = hosts.replace({'undefined':np.NaN})
+    try:
+        hosts['degradation'] = hosts['degradation'].replace({'001':'0.01', '01':'0.1', '005':'0.05'})
+    except:
+        pass
     hosts = hosts.astype(float)
     # hosts = hosts.sample(frac=.5)
 except:
@@ -40,14 +44,18 @@ if not os.path.isdir(folder+'/processing/hosts/'):
 usual_colors = ['tab:blue', 'tab:orange', 'tab:green','tab:purple','tab:red',
 'tab:pink','tab:brown'] 
 
+try:
+    hosts['growth_rate']=hosts['growth_rate'].replace({15:1.5, 5:0.5})
+except:
+    pass
 
-hosts['growth_rate']=hosts['growth_rate'].replace({15:1.5, 5:0.5})
 hosts = hosts.fillna(0)
 
 interest_params = ['total_vol', 'vol', 'n mito','total_oxphos']
-interest_params += [i[12:] for i in hosts.columns if i[:11]=='evolvables']
-for ev in [i for i in hosts.columns if i[:11]=='evolvables']:
-    df = df.rename(columns = {ev : ev[12:]})
+interest_params += [i[11:] for i in hosts.columns if i[:10]=='evolvables']
+
+for ev in [i for i in hosts.columns if i[:10]=='evolvables']:
+    hosts = hosts.rename(columns = {ev : ev[11:]})
 
 if params[-1]=='seed':
     unique_plots = True

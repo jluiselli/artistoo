@@ -20,34 +20,47 @@ else:
     print("merging dfs")
     hosts=pd.read_csv(folder+'/hosts.csv', low_memory=False, sep=";", dtype=str)
     try:
-        hosts = hosts.drop(['time of birth','good','bads','dna','type', 'Unnamed: 20'], axis=1)
+        hosts = hosts.drop(['time of birth','good','bads','dna','type'], axis=1)
+        hosts = hosts.drop([i for i in hosts.columns if i[:7]=='Unnamed'], axis=1)
         hosts = hosts.drop(['evolvables', 'subcells'], axis=1)
     except:
         pass
     print(hosts.columns)
     for col in hosts.columns:
         hosts[col] = hosts[col].replace({'undefined':np.NaN})
-        hosts[col] = hosts[col].astype(float)
-    hosts = hosts.astype(float)
+
     mit=pd.read_csv(folder+'/mit.csv', low_memory=False, sep=";", dtype=str)
     print(mit.columns)
-    mit = mit.drop(['products', 'bad products', 'sum dna', 'new DNA ids', 'type', 'Unnamed: 19'], axis=1)
+    mit = mit.drop(['products', 'bad products', 'sum dna', 'new DNA ids', 'type'], axis=1)
+    mit = mit.drop([i for i in hosts.columns if i[:7]=='Unnamed'], axis=1)
     for col in mit.columns:
-        print(col)
         mit[col] = mit[col].replace({'undefined':np.NaN})
-        mit[col] = mit[col].astype(float)
-    mit = mit.astype(float)
+
     # hosts.drop('subcells')
-    mit = mit.rename(columns = {'id':'mit_id','host':'host_id','V':'V_mit','vol':'vol_mit','Unnamed: 0':'idx1'})
-    hosts = hosts.rename(columns = {'id':'host_id','V':'V_host','vol':'vol_host','Unnamed: 0':'idx2'})
+    mit = mit.rename(columns = {'id':'mit_id','host':'host_id','V':'V_mit','vol':'vol_mit'})
+    hosts = hosts.rename(columns = {'id':'host_id','V':'V_host','vol':'vol_host'})
     joint_on = ['time','host_id','seed']+params
 
     df = hosts.merge(mit, on=None, how='right')
+
+    try:
+        df['degradation']=df['degradation'].replace({'01':'0.1', '0025':'0.025', '005':'0.05', '0075':'0.075', '001':'0.01'})
+    except:
+        pass
+    try:
+        df['growth_rate']=df['growth_rate'].replace({15:1.5, 5:0.5})
+    except:
+        pass
+    
+    print(df.columns)
+    print([i for i in df.columns if i[:7]=='Unnamed'])
+    df = df.drop([i for i in df.columns if i[:7]=='Unnamed'], axis=1)
     print(df)
     df.to_csv(folder+'/total_df.csv',sep=";")
 # except:
 #     print("Data must have been aggregated with aggregate.py before")
 #     exit
+df = df.astype(float)
 
 
 if not os.path.isdir(folder+'/processing/'):
@@ -69,15 +82,17 @@ print(evolvables)
 for ev in evolvables:
     df = df.rename(columns = {ev : ev[11:]})
 print(df.columns)
-df['growth_rate']=df['growth_rate'].replace({15:1.5, 5:0.5})
+
+
 df['time'] = df['time'].astype(float)
-df['fusion_rate'] = df['fusion_rate'].astype(float)
 df = df.astype(float)
+
 
 for k in params:
     non_plottable = [i for i in params]
     non_plottable += ['time', 'fusion_rate', 'host_id', 'mit_id', 'V_mit', 'V_host', 'idx1', 'idx2', 'seed',
     'fission events', 'fusion events', 'repliosomes', 'parent']
+    non_plottable += [i for i in df.columns if i[:7]=='Unnamed']
     print(k)
     for val in df.columns[2:]:
         df[val]=df[val].astype(float)
