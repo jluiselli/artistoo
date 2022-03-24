@@ -38,7 +38,7 @@ let config = {
         MTDNA_MUT_INIT: 0.002,
         MTDNA_MUT_ROS : 0.000005,
         NDNA_MUT_REP : 0,
-        NDNA_MUT_LIFETIME : 0,
+        NDNA_MUT_LIFETIME : 0.000005,
         INIT_HOST_V : 700,
         INIT_OXPHOS : 10,
         INIT_TRANSLATE : 10,
@@ -97,7 +97,7 @@ let config = {
         // non-background cellkinds. 
         // Runtime etc
         BURNIN : 0,
-        RUNTIME : 500,
+        RUNTIME : 5000,
         RUNTIME_BROWSER : "Inf",
         
         // Visualization
@@ -141,6 +141,7 @@ const {
     performance
   } = require('perf_hooks');
 const { ConsoleReporter } = require("jasmine")
+const stringify = require("braces/lib/stringify")
 let starttime = performance.now()
 
 
@@ -190,7 +191,6 @@ function postMCSListener(){
             if (this.C.random() < (cell.cellParameter("fission_rate")[this.C.cells[cell.host].kind-1] * cell.vol) && cell.vol > 2){
                 this.C.cells[cell.host].fission_events++
                 this.gm.divideCell(cid, cell.cellParameter('MITO_PARTITION'))
-
             } 
             if (this.C.random() <cell.cellParameter("fusion_rate")[this.C.cells[cell.host].kind-1] ){
                 let fuser = pickFuser(cell)
@@ -213,6 +213,29 @@ function postMCSListener(){
         stringbuffer += "\n##all died; time taken: "  + String((endtime-starttime)/(1000*60)) + " minutes\n"
         fs.appendFileSync(logpath, stringbuffer)        
         process.exit(0)
+    }
+
+    let cellkind = -1
+    let ended = true
+    for( let cid of this.C.cellIDs() ){ // If all cells are the same kind, we end the run
+        let cell = this.C.cells[cid]
+        if (cell instanceof CPM.SuperCell){
+            if (cellkind == -1){
+                cellkind = cell.kind
+            }
+            if (cellkind == cell.kind){
+                continue
+            }
+            else {
+                ended = false
+                break
+            }
+        }
+    }
+    if (ended){
+        fs.appendFileSync('./competition.txt', 'ended competition at time '+this.time)
+        fs.appendFileSync('./competition.txt', cellkind.toString())
+        throw ""
     }
 }
 
@@ -381,6 +404,9 @@ if (fs.existsSync('./deaths.txt')){
 }
 if (fs.existsSync('./divisions.txt')){
     fs.unlinkSync('./divisions.txt')
+}
+if (fs.existsSync('./competition.txt')){
+    fs.unlinkSync('./competition.txt')
 }
 
 let stringbuffer = ""
