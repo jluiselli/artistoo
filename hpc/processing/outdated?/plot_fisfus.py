@@ -1,5 +1,5 @@
 
-import outdated.process as process
+import auxiliary.process as process
 import pandas as pd
 import matplotlib
 matplotlib.use('Agg')

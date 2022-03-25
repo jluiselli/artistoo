@@ -36,13 +36,13 @@ def select(timestep, time):
 dfs = process.get(force=options.f, picklefname=keywords.nfile("2evolvablesrev.pickle"),runs=keywords.getruns(),folder=keywords.getfoldername(),  selector=select, reverse=True, stop=500,  sortbykeywordix=keywords.getkeywordix(), sortbylineix=keywords.getlineix(),verbose=options.v)
 print(dfs)
 # exit(1)
-# dfs2 = process.get(force=options.f, picklefname=keywords.nfile("evolvablesrev.pickle"),runs=keywords.getruns(),folder="../210927_mutrange2",  selector=select, reverse=True, stop=500,  sortbykeywordix=keywords.getkeywordix(), sortbylineix=keywords.getlineix(),verbose=options.v)
+# dfs2 = process.get(force=options.f, picklefname=keywords.nfile("evolvablesrev.pickle"),runs=keywords.getruns(),folder="../210927_mutrange2",  selector=select, reverse=True, stop=500,  sortbykeywordix=keywords.getkeywordix(), sortbylineix=keywords.getlineix(),verbose=options.v)#
 # print(dfs2.columns)
 # for path in dfs2:
-#     dfs[path] = dfs2[path]
-# # dfs= pd.concat([dfs,dfs2])
-# # dfs = pd.DataFrame(dfs)
-# print(dfs)
+#    dfs[path] = dfs2[path]
+# dfs= pd.concat([dfs,dfs2])
+# dfs = pd.DataFrame(dfs)
+print(dfs)
 # exit(1)
 # print(df)
 # facecolor=plt.gcf().get_facecolor()
@@ -73,33 +73,36 @@ for path in dfs:
     #         pass
     for kw, ix in keywords.getkeywordix():
         # print(title, kw, df[kw][0])
-        # print(kw, dfs[path][kw ])
-        # if kw == "rep":
-        #     continue
+        print(kw, dfs[path][kw ])
+        if kw == "rep":
+            continue
         df[kw] = float(dfs[path][kw])
     
     # df["path"] = path
-    # df["rep"] = dfs[path]["rep"]
-    df = df.drop(["seed"], axis=1)
-    df['path'] = int(path[-3:])
+    # df["NDNA_MUT_LIFETIME"] = dfs[path]["NDNA_MUT_LIFETIME"]
+    # df = df.drop(["seed"], axis=1)
     alldf.append(df)
 
 fig, ax = plt.subplots()
 alldf= pd.concat(alldf, ignore_index=True)
 print(alldf.columns)
 # print(alldf['rep'])
-alldf = pd.melt(alldf, id_vars=["rep","NDNA_MUT_LIFETIME", "path"])
+alldf = pd.melt(alldf, id_vars=["NDNA_MUT_LIFETIME", "seed"])
 print(alldf)
+# alldf['value'] = alldf['value'] * 1000
 order = sorted(alldf['variable'].unique())
-reporder = sorted(alldf["rep"].unique())
-alldf['value'] = alldf['value'] * 1000
-g = sns.FacetGrid(alldf, col="variable",row="NDNA_MUT_LIFETIME", hue="path", sharex=False,sharey=False, palette='cubehelix', col_order=order, aspect=1.3)
+for mut in alldf['NDNA_MUT_LIFETIME'].unique():
+    for var in order:
+        mean = alldf[(alldf['variable']==var) & (alldf['NDNA_MUT_LIFETIME']==mut) ]['value'].mean()
+        print(mut, var, f'{mean:.2}')
+reporder = sorted(alldf["NDNA_MUT_LIFETIME"].unique())
+g = sns.catplot(data=alldf, col="variable",x= "NDNA_MUT_LIFETIME", y="value", hue="seed", s=3, sharey=False  ,palette='colorblind', kind='swarm')
 # g.map(fixed_boxplot, "rep", "value", order=reporder)
-g.map(sns.swarmplot, "rep", "value", order=reporder, s=3)
-g.set_titles('{col_name}x1000')
+# g.map(sns.violinplot, "NDNA_MUT_LIFETIME", "value", order=reporder)
+g.set_titles('{col_name}x1k')
 g.add_legend()
 fig.tight_layout()
-plt.savefig(keywords.nfile("compareevolvablesmutsfirst.png"))
-plt.savefig(keywords.nfile("compareevolvablesmutsfirst.svg"))
+plt.savefig(keywords.nfile("compareevolvablesmutsfirstseed.png"))
+plt.savefig(keywords.nfile("compareevolvablesmutsfirstseed.svg"))
 plt.close()
    

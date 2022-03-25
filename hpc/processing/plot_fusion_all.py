@@ -73,6 +73,7 @@ df['growth_rate']=df['growth_rate'].replace({15:1.5, 5:0.5})
 df['time'] = df['time'].astype(float)
 df['fusion_rate'] = df['fusion_rate'].astype(float)
 df = df.astype(float)
+df = df[df['time']>=max(df['time'])-10000] #Plotting the 10000 last generations
 
 for k in params:
     non_plottable = [i for i in params]
@@ -98,7 +99,10 @@ for k in params:
                 alpha=0.1, s=20, ax=ax
                 )
             ax.set_ylim(min(df['fusion_rate']), max(df['fusion_rate']))
-            ax.set_xlim(min(df[val]), max(df[val]))
+            try:
+                ax.set_xlim(min(df[val]), max(df[val]))
+            except:
+                pass
         
             ax.set_ylabel('fusion_rate')
             ax.set_xlabel(val)
@@ -106,7 +110,7 @@ for k in params:
             ax.set_title("fusion rate against "+val+" for different "+k)
 
             fig.tight_layout()
-            fig.savefig(folder+'/processing/fusion/'+val+'_'+k+'.png',dpi=600)
+            fig.savefig(folder+'/processing/fusion/'+val+'_'+k+'.png')
             plt.close(fig)
             print(k,val,'done')
             
@@ -135,7 +139,7 @@ for k in params:
                         ax.set_title("fusion rate against "+val+" with "+k+"="+str(unique_value))
 
                         fig.tight_layout()
-                        fig.savefig(folder+'/processing/fusion/'+val+'_'+k+'_'+str(unique_value)+'.png',dpi=600)
+                        fig.savefig(folder+'/processing/fusion/'+val+'_'+k+'_'+str(unique_value)+'.png')
                         plt.close(fig)
 
             print(k,val,'unique \ done')
