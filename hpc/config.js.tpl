@@ -450,6 +450,7 @@ if (fs.existsSync('./competition.txt')){
     fs.unlinkSync('./competition.txt')
 }
 
+let stringbuffer = ""
 let mitstr = ""
 let hoststr = ""
 let compstr = ""
