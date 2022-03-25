@@ -1,5 +1,5 @@
-let CPM = require("../../build/artistoo-cjs.js")
-let ColorMap = require("../../examples/node/colormap-cjs.js")
+let CPM = require("../../../build/artistoo-cjs.js")
+let ColorMap = require("../../../examples/node/colormap-cjs.js")
  
 "use strict"
 
@@ -436,6 +436,7 @@ if (fs.existsSync(hostlogpath)){
 }
 if (fs.existsSync(complogpath)){
     fs.unlinkSync(complogpath)
+}
 if (fs.existsSync('./Host_deaths.txt')){
     fs.unlinkSync('./Host_deaths.txt')
 }
