@@ -203,7 +203,46 @@ function postMCSListener(){
         if (cell instanceof CPM.SuperCell){
             if (cell.vol > cell.cellParameter('host_division_volume')[cell.kind-1]){
                 let nid = cell.divideHostCell(cid)
-                cell.write("divisions.txt", {"daughter":this.C.cells[nid].stateDct(), "parent":cell.stateDct()})
+                if (!fs.existsSync("divisions.txt")){
+                    let parstr = ""
+                    let daughterstr = ""
+                    for (let key in cell.stateDct()){
+                        if (key == "evolvables"){
+                            for (let key2 in cell.stateDct()[key]){
+                                parstr += "parent_evolvables_" + key2 + ";"
+                                daughterstr += "daughter_evolvables_" + key2 + ";"
+                            }
+                        }
+                        else {
+                            parstr += "parent_" + key + ";"
+                            daughterstr += "daughter_" + key + ";"
+                        }
+                        
+                    }
+                    fs.appendFileSync("divisions.txt", parstr+daughterstr+'\n')
+                }
+                let divstr = ""
+                for (let key in cell.stateDct()){
+                    if (key == "evolvables"){
+                        for (let key2 in cell.stateDct()[key]){
+                            divstr += cell.stateDct()[key][key2]+";"
+                        }
+                    }
+                    else {
+                        divstr += cell.stateDct()[key]+";"
+                    }
+                }
+                for (let key in this.C.cells[nid].stateDct()){
+                    if (key == "evolvables"){
+                        for (let key2 in this.C.cells[nid].stateDct()[key]){
+                            divstr += this.C.cells[nid].stateDct()[key][key2]+";"
+                        }
+                    }
+                    else {
+                        divstr += this.C.cells[nid].stateDct()[key]+";"
+                    }
+                }
+                fs.appendFileSync("divisions.txt", divstr+'\n')
             }
         }
     }
@@ -337,8 +376,8 @@ function getColor (cid) {
     if (cell.id < 0){
         return
     }
-    let c = 0
-    let no_cmap = false
+    // let c = 0
+    // let no_cmap = false
     if (cell instanceof CPM.SuperCell){
         if (cell.dna_good){
             if (colorby == "n_DNA"){
@@ -397,9 +436,11 @@ if (fs.existsSync(hostlogpath)){
 }
 if (fs.existsSync(complogpath)){
     fs.unlinkSync(complogpath)
+if (fs.existsSync('./Host_deaths.txt')){
+    fs.unlinkSync('./Host_deaths.txt')
 }
-if (fs.existsSync('./deaths.txt')){
-    fs.unlinkSync('./deaths.txt')
+if (fs.existsSync('./Mit_deaths.txt')){
+    fs.unlinkSync('./Mit_deaths.txt')
 }
 if (fs.existsSync('./divisions.txt')){
     fs.unlinkSync('./divisions.txt')
@@ -424,7 +465,6 @@ function logStats(){
     for( let cell of this.C.cells ){
         if (cell instanceof CPM.HostCell){
             compstr += cell.kind.toString()+","
-            ncells++
             jsonobj[cell.id] = cell.stateDct()
             for (let subcell of cell.subcells()){
                 subcells[subcell.id] = subcell.stateDct()
@@ -458,7 +498,6 @@ function logStats(){
             let i = 0
             for (let key in jsonobj){
                 for (let key2 in jsonobj[key]){
-                    if (i==0){
                         if (key2 == "evolvables"){
                             for (let key3 in jsonobj[key][key2]){
                                 hoststr += "evolvables_"+key3+";"
@@ -467,9 +506,8 @@ function logStats(){
                         else {
                             hoststr += key2+";"
                         }
-                    }
                 }
-				i++
+                break
             }
             hoststr += '\n'
         }
@@ -497,6 +535,7 @@ function logStats(){
         fs.appendFileSync(complogpath, compstr)
         mitstr = ""
         hoststr = ""
+        compstr = ""
     }
 }
 
