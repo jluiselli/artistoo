@@ -418,9 +418,7 @@ function logStats(){
     }
     jsonobj = {}
     let curdna = {}
-    let meandict = {}
     let subcells = {}
-    let ncells = 0
     for( let cell of this.C.cells ){
         if (cell instanceof CPM.HostCell){
             jsonobj[cell.id] = cell.stateDct()
@@ -488,10 +486,8 @@ function logStats(){
             }
             hoststr += '\n'
         }
-        // fs.appendFileSync(logpath, stringbuffer)
         fs.appendFileSync(hostlogpath, hoststr)
         fs.appendFileSync(mitlogpath, mitstr)
-        // stringbuffer = ""
         mitstr = ""
         hoststr = ""
     }
