@@ -182,7 +182,7 @@ class Mitochondrion extends SubCell {
 			return
 		}
 
-		this.write("./deaths.txt", this.stateDct())
+		this.write("./Mit_deaths.txt", this.stateDct())
 	}
 
 
@@ -629,25 +629,32 @@ class Mitochondrion extends SubCell {
 	 * @param {String} logpath - output path
 	 * @param {Object} dct - output object
 	 */
-	 write(logpath, dct){
-		if(!( typeof window !== "undefined" && typeof window.document !== "undefined" )){
-			if (!this.fs){
-				this.fs = require("fs")
-			}
-			let bufstr = ""    
-			if (!this.fs.existsSync(logpath)){
-				for (let key in dct){
-					bufstr += key+";"
-				}
-				bufstr += '\n'
-			}
+	write(logpath, dct){
+		if (!this.fs){
+			this.fs = require("fs")
+		}
+		if (!this.fs.existsSync(logpath)){
+			let deathstr = ""
 			for (let key in dct){
-            bufstr += dct[key]+";"
-       		}
-			bufstr += "\n" 
-			this.fs.appendFileSync(logpath, bufstr)
-		}   
-	}
+				deathstr += key + ";"
+			}
+			deathstr += "\n"
+			this.fs.appendFileSync(logpath, deathstr)
+		}
+		let deathstr = ""
+		for (let key in dct){
+			if (key == "evolvables"){
+				for (let key2 in dct[key]){
+					deathstr += dct[key][key2]+";"
+				}
+			}
+			else {
+				deathstr += dct[key]+";"
+			}
+		}
+		deathstr += "\n"
+		this.fs.appendFileSync(logpath, deathstr)
+	}  
 }
 
 export default Mitochondrion

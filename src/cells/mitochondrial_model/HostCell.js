@@ -152,7 +152,7 @@ class HostCell extends SuperCell {
 			this.write("debug.log", {"message": "Host died with extant subcells, please mind the balance in your model", "cell" : this.stateDct()})
 			mito.V = -50 // if this is necessary coul
 		}
-		this.write("./deaths.txt", this.stateDct()) 
+		this.write("./Host_deaths.txt", this.stateDct()) 
 	}
 	
 	/** Get standard Normal variate from univariate using Box-Muller transform.
@@ -211,24 +211,38 @@ class HostCell extends SuperCell {
 	 * @param {Object} dct - output object
 	 */
 	write(logpath, dct){
-		if(!( typeof window !== "undefined" && typeof window.document !== "undefined" )){
-			if (!this.fs){
-				this.fs = require("fs")
-			}
-			let bufstr = ""    
-			if (!this.fs.existsSync(logpath)){
-				for (let key in dct){
-					bufstr += key+";"
-				}
-				bufstr += '\n'
-			}
+		if (!this.fs){
+			this.fs = require("fs")
+		}
+		if (!this.fs.existsSync(logpath)){
+			let deathstr = ""
 			for (let key in dct){
-            bufstr += dct[key]+";"
-       		}
-			bufstr += "\n" 
-			this.fs.appendFileSync(logpath, bufstr)
-		}   
-	}
+				if (key == "evolvables"){
+					for (let key2 in dct[key]){
+						deathstr += "evolvables_" + key2 + ";"
+					}
+				}
+				else {
+					deathstr += key + ";"
+				}
+			}
+			deathstr += "\n"
+			this.fs.appendFileSync(logpath, deathstr)
+		}
+		let deathstr = ""
+		for (let key in dct){
+			if (key == "evolvables"){
+				for (let key2 in dct[key]){
+					deathstr += dct[key][key2]+";"
+				}
+			}
+			else {
+				deathstr += dct[key]+";"
+			}
+		}
+		deathstr += "\n"
+		this.fs.appendFileSync(logpath, deathstr)
+	}   
 }
 
 export default HostCell
