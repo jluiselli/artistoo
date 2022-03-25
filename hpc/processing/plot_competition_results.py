@@ -39,6 +39,7 @@ fig.savefig(folder+'/processing/competition_results.png')
 plt.close(fig)
 
 
+<<<<<<< Updated upstream
 if os.path.exists(folder+'/competition_time.csv'):
     df = pd.read_csv(folder+'/competition_time.csv')
 else:
@@ -97,3 +98,8 @@ fig.tight_layout()
 fig.savefig(folder+'/processing/competition_time.png')
 plt.close(fig)
 
+=======
+# print('./'+folder+'/competition.csv')
+# comp_df = pd.read_csv('./'+folder+'/competition.csv', sep=";")
+# comp_df["distribution"]=int(comp_df["distribution"].split(''))
+>>>>>>> Stashed changes
