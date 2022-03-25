@@ -10,33 +10,33 @@ if not os.path.isdir(folder+'/processing/'):
     print('The directory is not present. Creating a new one..')
     os.mkdir(folder+'/processing/')
 
-victories = []
-for f in os.listdir(folder):
-    try:
-        ifs = open('./'+folder+'/'+f+'/competition.txt')
-        line = ifs.readline()
-        print(line)
-        line = ifs.readline()
-        print(line)
-        victories += [int(line)]
-        ifs.close()
+# victories = []
+# for f in os.listdir(folder):
+#     try:
+#         ifs = open('./'+folder+'/'+f+'/competition.txt')
+#         line = ifs.readline()
+#         print(line)
+#         line = ifs.readline()
+#         print(line)
+#         victories += [int(line)]
+#         ifs.close()
+#         print(f+" completed")
 
-    except:
-        print("reading error for "+f)
+#     except:
+#         print("reading error for "+f)
 
 
 
-fig, ax = plt.subplots(1, 1, figsize=(15,10))
+# fig, ax = plt.subplots(1, 1, figsize=(15,10))
 
-ax.hist(victories)
+# ax.hist(victories)
 
-ax.set_ylabel(col)
-ax.set_xlabel('Winner')
-ax.set_title("Nb of wins for each strain")
+# ax.set_xlabel('Winner')
+# ax.set_title("Nb of wins for each strain")
 
-fig.tight_layout()
-fig.savefig(folder+'/processing/competition_results.png')
-plt.close(fig)
+# fig.tight_layout()
+# fig.savefig(folder+'/processing/competition_results.png')
+# plt.close(fig)
 
 
 if os.path.exists(folder+'/competition_time.csv'):
@@ -88,9 +88,11 @@ else:
 print(df.shape)
 # df = df.sample(frac=0.002) # Otherwise too long to plot
 df["seed"] = df["seed"].astype(str) # To get categorical in hue color
+df["ncells"] = df["ones"]*100/df["prop_1"]
 
-fig, ax = plt.subplots(1, 1, figsize=(15,10))
-sns.lineplot(data=df, x='time',y='prop_1', hue='seed', ax=ax, linewidth=3)
+fig, ax = plt.subplots(1, 2, figsize=(15,10))
+sns.lineplot(data=df, x='time',y='prop_1', hue='seed', ax=ax[0], linewidth=3)
+sns.lineplot(data=df, x='time',y='ncells', hue='seed', ax=ax[1], linewidth=3)
 ax.set_ylim(0,1)
 ax.axhline(y=0.5, color='grey')
 fig.tight_layout()
