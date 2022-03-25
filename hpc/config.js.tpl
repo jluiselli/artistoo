@@ -4,107 +4,100 @@ let ColorMap = require("../../../examples/node/colormap-cjs.js")
 "use strict"
 
 let config = {
-
-    // Grid settings
-    ndim : 2,
-    field_size : [450,450],
-    
-    // CPM parameters and configuration
-    conf : {
-        // Basic CPM parameters
-        torus : [true,true],                // Should the grid have linked borders?
-        seed : 8473984,                            // Seed for random number generation.
-        T : 2,                                // CPM temperature
+	// Grid settings
+	ndim : 2,
+	field_size : [450,450],
+	
+	// CPM parameters and configuration
+	conf : {
+		// Basic CPM parameters
+		torus : [true,true],				// Should the grid have linked borders?
+		seed : 43894793,							// Seed for random number generation.
+		T : 2,								// CPM temperature
         
     
-        CELLS : ["empty", CPM.HostCell, CPM.HostCell, CPM.Mitochondrion], 
-          
-        J_INT:  [ [15,15,15], 
-                  [15,15,15],
-                  [15,15,15] ],
-
-        J_EXT:  [ [15,  50,  50,  1500], 
-                  [50,  750, 750, 1500], 
-                  [50,  750, 750, 1500],
-                  [1500,1500,1500,15000]],
-
-        
+		CELLS : ["empty", CPM.HostCell, CPM.Mitochondrion], 
+		  
+        J_INT:  [[15,15], 
+        		 [15,15]],
+        J_EXT:  [[15,50,1500], 
+				 [50,750,1500], 
+            	 [1500, 1500,15000]],
+		
         N_OXPHOS : 5, 
         N_TRANSLATE : 5,
         N_REPLICATE : 50,
         INIT_MITO_V : 500,
         N_INIT_DNA : 5,
-        MTDNA_MUT_REP : 0.0003,
-        MTDNA_MUT_INIT: 0.002,
-        MTDNA_MUT_ROS : 0.000005,
-        NDNA_MUT_REP : 0,
-        NDNA_MUT_LIFETIME : 0.000005,
-        INIT_HOST_V : 700,
-        INIT_OXPHOS : 10,
-        INIT_TRANSLATE : 10,
-        INIT_REPLICATE : 2,
-        FACTOR_HOSTSHRINK_OVERFLOW: 10,
-
-        // Carrying capacity for pathways per 100 volume pixels 
-        OXPHOS_PER_100VOL: 0.5,
-
-        // Constraint parameters. 
-        // Mostly these have the format of an array in which each element specifies the
-        // parameter value for one of the cellkinds on the grid.
+		MTDNA_MUT_REP : 0.0003,
+		MTDNA_MUT_INIT: 0.002,
+        MTDNA_MUT_ROS : 0.00005,
+		NDNA_MUT_REP : 0,
+        NDNA_MUT_LIFETIME : 0.000001,
+		INIT_HOST_V : 700,
+		INIT_OXPHOS : 10,
+		INIT_TRANSLATE : 10,
+		INIT_REPLICATE : 2,
+		FACTOR_HOSTSHRINK_OVERFLOW: 10,
+		// Carrying capacity for pathways per 100 volume pixels 
+		OXPHOS_PER_100VOL: 0.5,
+		// Constraint parameters. 
+		// Mostly these have the format of an array in which each element specifies the
+		// parameter value for one of the cellkinds on the grid.
         // First value is always cellkind 0 (the background) and is often not used.
+		REPLICATE_TIME: 30,
+		fission_rate : 0.00002,
+		fusion_rate : 0.00025,
+		rep: 19,
+		rep2: 0,
+		evolvables: {"fission_rate": {"sigma" : 0.000001}, 
+							"fusion_rate":{"sigma" : 0.00003}, 
+							"rep": {"sigma" : 0.5}, 
+							"HOST_V_PER_OXPHOS":{"sigma" : 0.025}, 
+							"host_division_volume":{"sigma" : 75, "lower_bound" : 2, "upper_bound":5000}
+		 } ,
+		
+		deprecation_rate : 0.1,
+        PROT_MUT_ROS : 0.001,
+		
+		MITO_SHRINK : 1,
+		MITOPHAGY_THRESHOLD: 0,
+		MITOPHAGY_SHRINK : -10,
+		HOST_SHRINK : 5,
+		MITO_GROWTH_MAX : 9,
+		HOST_GROWTH_MAX : 9,
+		MITO_V_PER_OXPHOS : 2,
+		HOST_V_PER_OXPHOS : 0.3,
+	
+		VOLCHANGE_THRESHOLD : 10,
+		SELECTIVE_FUSION: false,
 
-        REPLICATE_TIME: 30,
-        fission_rate : [0.000013,0.00003],
-        fusion_rate : [0.00077,0.00021],
-        rep: [23.8,12.8],
-        rep2: 0,
-        evolvables: {
-                    // "fission_rate": {"sigma" : 0.000001}, 
-                    // "fusion_rate":{"sigma" : 0.00003}, 
-                    // "HOST_V_PER_OXPHOS":{"sigma" : 0.025}, 
-                    // "host_division_volume":{"sigma" : 75, "lower_bound" : 2, "upper_bound":5000},
-                    // "rep": {"sigma" : 0.5},
-         } ,
-        
-        deprecation_rate : 0.1,
-        
-        MITO_SHRINK : 1,
-        MITOPHAGY_THRESHOLD: 0,
-        MITOPHAGY_SHRINK : -10,
-        HOST_SHRINK : 5,
-        MITO_GROWTH_MAX : 9,
-        HOST_GROWTH_MAX : 9,
-        MITO_V_PER_OXPHOS : 2,
-        HOST_V_PER_OXPHOS : [0.35,0.15],
-    
-        VOLCHANGE_THRESHOLD : 10,
-        SELECTIVE_FUSION: false,
+		MITO_PARTITION : 0.5,
 
-        MITO_PARTITION : 0.5,
 
-        // VolumeConstraint parameters
-        LAMBDA_V : [0, 1, 1, 1],                // VolumeConstraint importance per cellkind
-        V : [0,502, 502, 200],                    
-        host_division_volume: [2274,3421],
-    },
+		// VolumeConstraint parameters
+		LAMBDA_V : [0, 1, 1],				// VolumeConstraint importance per cellkind
+		V : [0,502, 200],					
+		host_division_volume: 1000,
+	},
     
     // Simulation setup and configuration: this controls stuff like grid initialization,
     // runtime, and what the output should look like.
     simsettings : { 
     
         // Cells on the grid
-        NRCELLS : [10, 10, 5],                        // Number of cells to seed for all
+        NRCELLS : [20, 5],                        // Number of cells to seed for all
         // non-background cellkinds. 
         // Runtime etc
         BURNIN : 0,
-        RUNTIME : 5000,
+        RUNTIME : 1510,
         RUNTIME_BROWSER : "Inf",
         
         // Visualization
         CANVASCOLOR : "EEEEEE",
-        CELLCOLOR : ["9E60BE", "FFAAEA",  "FFEAAA"],
-        SHOWBORDERS : [true, true, true],                // Should cellborders be displayed?
-        BORDERCOL : ["666666", "666666", "666666"],                // color of the cell borders
+        CELLCOLOR : ["9E60BE", "FFAAEA"],
+        SHOWBORDERS : [true, true],                // Should cellborders be displayed?
+        BORDERCOL : ["666666", "666666"],                // color of the cell borders
         zoom : 1,                            // zoom in on canvas with this factor.
         
         // Output images
@@ -140,8 +133,6 @@ sim = new CPM.Simulation( config, custommethods )
 const {
     performance
   } = require('perf_hooks');
-const { ConsoleReporter } = require("jasmine")
-const stringify = require("braces/lib/stringify")
 let starttime = performance.now()
 
 
@@ -154,10 +145,10 @@ function seedSubCells(){
     } 
     let cellpixelsbyid = sim.C.getStat(CPM.PixelsByCell)
     for (let cid of Object.keys(cellpixelsbyid)) {
-        if (sim.C.cellKind(cid) == 1 || sim.C.cellKind(cid) == 2){
-            for (let i =0; i < sim.conf["NRCELLS"][2]; i++){
+        if (sim.C.cellKind(cid) == 1){
+            for (let i =0; i < sim.conf["NRCELLS"][1]; i++){
                 let coord = cellpixelsbyid[cid][Math.floor(sim.C.mt.random()*cellpixelsbyid[cid].length)]
-                let nid = sim.gm.seedCellAt( 3, coord )
+                let nid = sim.gm.seedCellAt( 2, coord )
                 sim.C.cells[nid].host = cid
             }
         }
@@ -188,11 +179,12 @@ function postMCSListener(){
     for( let cid of this.C.cellIDs() ){
         let cell = this.C.cells[cid]
         if (cell instanceof CPM.SubCell){
-            if (this.C.random() < (cell.cellParameter("fission_rate")[this.C.cells[cell.host].kind-1] * cell.vol) && cell.vol > 2){
+            if (this.C.random() < (cell.cellParameter("fission_rate") * cell.vol) && cell.vol > 2){
                 this.C.cells[cell.host].fission_events++
                 this.gm.divideCell(cid, cell.cellParameter('MITO_PARTITION'))
+
             } 
-            if (this.C.random() <cell.cellParameter("fusion_rate")[this.C.cells[cell.host].kind-1] ){
+            if (this.C.random() <cell.cellParameter("fusion_rate") ){
                 let fuser = pickFuser(cell)
                 if (fuser !== undefined){
                     this.C.cells[cell.host].fusion_events++
@@ -201,7 +193,7 @@ function postMCSListener(){
             }
         }
         if (cell instanceof CPM.SuperCell){
-            if (cell.vol > cell.cellParameter('host_division_volume')[cell.kind-1]){
+            if (cell.vol > cell.cellParameter('host_division_volume')){
                 let nid = cell.divideHostCell(cid)
                 if (!fs.existsSync("divisions.txt")){
                     let parstr = ""
@@ -253,29 +245,6 @@ function postMCSListener(){
         fs.appendFileSync(logpath, stringbuffer)        
         process.exit(0)
     }
-
-    let cellkind = -1
-    let ended = true
-    for( let cid of this.C.cellIDs() ){ // If all cells are the same kind, we end the run
-        let cell = this.C.cells[cid]
-        if (cell instanceof CPM.SuperCell){
-            if (cellkind == -1){
-                cellkind = cell.kind
-            }
-            if (cellkind == cell.kind){
-                continue
-            }
-            else {
-                ended = false
-                break
-            }
-        }
-    }
-    if (ended){
-        fs.appendFileSync('./competition.txt', 'ended competition at time '+this.time)+'\n'
-        fs.appendFileSync('./competition.txt', cellkind.toString()+'\n')
-        throw ""
-    }
 }
 
 function pickFuser(cell){
@@ -312,11 +281,6 @@ function initializeGrid(){
         } else {
             this.gm.seedCell(1)
         }
-    }
-
-    nrcells = this.conf["NRCELLS"][1], i  // Second type of cells
-    for( i = 0; i < nrcells; i++ ){            
-        this.gm.seedCell(2)
     }
 }
 
@@ -424,18 +388,15 @@ function drawOnTop(){
     this.Cim.ctx.strokeText(colorby + " " + now, 10, 35);
 }
 
+let logpath = "./"+config['simsettings']["LOGPATH"]+'/'+config['simsettings']["EXPNAME"]+"log.txt"
 let mitlogpath = "./"+config['simsettings']["LOGPATH"]+'/Mit_'+config['simsettings']["EXPNAME"]+"log.txt"
 let hostlogpath = "./"+config['simsettings']["LOGPATH"]+'/Hosts_'+config['simsettings']["EXPNAME"]+"log.txt"
-let complogpath = "./competition_log.txt"
 
 if (fs.existsSync(mitlogpath)){
     fs.unlinkSync(mitlogpath)
 }
 if (fs.existsSync(hostlogpath)){
     fs.unlinkSync(hostlogpath)
-}
-if (fs.existsSync(complogpath)){
-    fs.unlinkSync(complogpath)
 }
 if (fs.existsSync('./Host_deaths.txt')){
     fs.unlinkSync('./Host_deaths.txt')
@@ -446,14 +407,10 @@ if (fs.existsSync('./Mit_deaths.txt')){
 if (fs.existsSync('./divisions.txt')){
     fs.unlinkSync('./divisions.txt')
 }
-if (fs.existsSync('./competition.txt')){
-    fs.unlinkSync('./competition.txt')
-}
 
 let stringbuffer = ""
 let mitstr = ""
 let hoststr = ""
-let compstr = ""
 let prevdna = {}
 function logStats(){
     if (this.C.time <=200){
@@ -462,11 +419,8 @@ function logStats(){
     jsonobj = {}
     let curdna = {}
     let subcells = {}
-    let ncells = 0
-    compstr += this.time + ";"
     for( let cell of this.C.cells ){
         if (cell instanceof CPM.HostCell){
-            compstr += cell.kind.toString()+","
             jsonobj[cell.id] = cell.stateDct()
             for (let subcell of cell.subcells()){
                 subcells[subcell.id] = subcell.stateDct()
@@ -481,7 +435,6 @@ function logStats(){
             }
         }
     }
-    compstr += "\n"
     prevdna = curdna
     if ((this.time / config['simsettings']['LOGRATE'] ) % config['simsettings']["FLUSHRATE"] == 0 ){
         if (!fs.existsSync(mitlogpath)){
@@ -513,6 +466,7 @@ function logStats(){
             }
             hoststr += '\n'
         }
+
         for (let key in subcells){
             for (let key2 in subcells[key]){
                     mitstr += subcells[key][key2]+";"
@@ -534,10 +488,8 @@ function logStats(){
         }
         fs.appendFileSync(hostlogpath, hoststr)
         fs.appendFileSync(mitlogpath, mitstr)
-        fs.appendFileSync(complogpath, compstr)
         mitstr = ""
         hoststr = ""
-        compstr = ""
     }
 }
 
