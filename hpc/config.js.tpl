@@ -195,7 +195,46 @@ function postMCSListener(){
         if (cell instanceof CPM.SuperCell){
             if (cell.vol > cell.cellParameter('host_division_volume')){
                 let nid = cell.divideHostCell(cid)
-                cell.write("divisions.txt", {"daughter":this.C.cells[nid].stateDct(), "parent":cell.stateDct()})
+                if (!fs.existsSync("divisions.txt")){
+                    let parstr = ""
+                    let daughterstr = ""
+                    for (let key in cell.stateDct()){
+                        if (key == "evolvables"){
+                            for (let key2 in cell.stateDct()[key]){
+                                parstr += "parent_evolvables_" + key2 + ";"
+                                daughterstr += "daughter_evolvables_" + key2 + ";"
+                            }
+                        }
+                        else {
+                            parstr += "parent_" + key + ";"
+                            daughterstr += "daughter_" + key + ";"
+                        }
+                        
+                    }
+                    fs.appendFileSync("divisions.txt", parstr+daughterstr+'\n')
+                }
+                let divstr = ""
+                for (let key in cell.stateDct()){
+                    if (key == "evolvables"){
+                        for (let key2 in cell.stateDct()[key]){
+                            divstr += cell.stateDct()[key][key2]+";"
+                        }
+                    }
+                    else {
+                        divstr += cell.stateDct()[key]+";"
+                    }
+                }
+                for (let key in this.C.cells[nid].stateDct()){
+                    if (key == "evolvables"){
+                        for (let key2 in this.C.cells[nid].stateDct()[key]){
+                            divstr += this.C.cells[nid].stateDct()[key][key2]+";"
+                        }
+                    }
+                    else {
+                        divstr += this.C.cells[nid].stateDct()[key]+";"
+                    }
+                }
+                fs.appendFileSync("divisions.txt", divstr+'\n')
             }
         }
     }
@@ -301,8 +340,8 @@ function getColor (cid) {
     if (cell.id < 0){
         return
     }
-    let c = 0
-    let no_cmap = false
+    // let c = 0
+    // let no_cmap = false
     if (cell instanceof CPM.SuperCell){
         if (cell.dna_good){
             if (colorby == "n_DNA"){
@@ -352,7 +391,6 @@ function drawOnTop(){
 let logpath = "./"+config['simsettings']["LOGPATH"]+'/'+config['simsettings']["EXPNAME"]+"log.txt"
 let mitlogpath = "./"+config['simsettings']["LOGPATH"]+'/Mit_'+config['simsettings']["EXPNAME"]+"log.txt"
 let hostlogpath = "./"+config['simsettings']["LOGPATH"]+'/Hosts_'+config['simsettings']["EXPNAME"]+"log.txt"
-let meanlogpath = "./"+config['simsettings']["LOGPATH"]+'/Mean_'+config['simsettings']["EXPNAME"]+"log.txt"
 
 if (fs.existsSync(mitlogpath)){
     fs.unlinkSync(mitlogpath)
@@ -360,18 +398,17 @@ if (fs.existsSync(mitlogpath)){
 if (fs.existsSync(hostlogpath)){
     fs.unlinkSync(hostlogpath)
 }
-if (fs.existsSync(meanlogpath)){
-    fs.unlinkSync(meanlogpath)
+if (fs.existsSync('./Host_deaths.txt')){
+    fs.unlinkSync('./Host_deaths.txt')
 }
-if (fs.existsSync('./deaths.txt')){
-    fs.unlinkSync('./deaths.txt')
+if (fs.existsSync('./Mit_deaths.txt')){
+    fs.unlinkSync('./Mit_deaths.txt')
 }
 if (fs.existsSync('./divisions.txt')){
     fs.unlinkSync('./divisions.txt')
 }
 
 let stringbuffer = ""
-let meanstr = ""
 let mitstr = ""
 let hoststr = ""
 let prevdna = {}
@@ -386,28 +423,7 @@ function logStats(){
     let ncells = 0
     for( let cell of this.C.cells ){
         if (cell instanceof CPM.HostCell){
-            ncells++
             jsonobj[cell.id] = cell.stateDct()
-            for (let item in jsonobj[cell.id]){
-                if (item == 'evolvables'){
-                    for (let ev in jsonobj[cell.id]['evolvables']){
-                        if (ev in meandict){
-                            meandict[ev] += jsonobj[cell.id]['evolvables'][ev]
-                        }
-                        else {
-                            meandict[ev] = jsonobj[cell.id]['evolvables'][ev]
-                        }
-                    }
-                }
-                else{
-                    if (item in meandict){
-                        meandict[item] += jsonobj[cell.id][item]
-                    }
-                    else {
-                        meandict[item] = jsonobj[cell.id][item]
-                    }
-                }
-            }
             for (let subcell of cell.subcells()){
                 subcells[subcell.id] = subcell.stateDct()
                 let mito = subcells[subcell.id]
@@ -421,20 +437,8 @@ function logStats(){
             }
         }
     }
-    for (let item in meandict){
-        meandict[item]/= ncells
-    }
     prevdna = curdna
-    let timestr = String(  "\n%------------------------------ " + this.time + " ------------------------------\n")
-    let objstr = JSON.stringify(jsonobj)
-    stringbuffer += timestr+objstr
     if ((this.time / config['simsettings']['LOGRATE'] ) % config['simsettings']["FLUSHRATE"] == 0 ){
-        if (!fs.existsSync(meanlogpath)){
-            for (let key in meandict){
-                meanstr += key+";"
-            }
-            meanstr += '\n'
-        }
         if (!fs.existsSync(mitlogpath)){
             let i = 0
             for (let key in subcells){
@@ -451,17 +455,20 @@ function logStats(){
             let i = 0
             for (let key in jsonobj){
                 for (let key2 in jsonobj[key]){
-                    if (i==0){
-                        hoststr += key2+";"
-                    }
+                        if (key2 == "evolvables"){
+                            for (let key3 in jsonobj[key][key2]){
+                                hoststr += "evolvables_"+key3+";"
+                            }
+                        }
+                        else {
+                            hoststr += key2+";"
+                        }
                 }
-				i++
+                break
             }
             hoststr += '\n'
         }
-        for (let key in meandict){
-            meanstr += meandict[key]+";"
-        }
+
         for (let key in subcells){
             for (let key2 in subcells[key]){
                     mitstr += subcells[key][key2]+";"
@@ -470,16 +477,21 @@ function logStats(){
         }
         for (let key in jsonobj){
             for (let key2 in jsonobj[key]){
-                hoststr += jsonobj[key][key2]+";"
+                if (key2 == "evolvables"){
+                    for (let key3 in jsonobj[key][key2]){
+                        hoststr += jsonobj[key][key2][key3]+";"
+                    }
+                }
+                else {
+                    hoststr += jsonobj[key][key2]+";"
+                }
             }
             hoststr += '\n'
         }
         // fs.appendFileSync(logpath, stringbuffer)
-        fs.appendFileSync(meanlogpath, meanstr)
         fs.appendFileSync(hostlogpath, hoststr)
         fs.appendFileSync(mitlogpath, mitstr)
         // stringbuffer = ""
-        meanstr = ""
         mitstr = ""
         hoststr = ""
     }
