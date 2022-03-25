@@ -272,8 +272,8 @@ function postMCSListener(){
         }
     }
     if (ended){
-        fs.appendFileSync('./competition.txt', 'ended competition at time '+this.time)
-        fs.appendFileSync('./competition.txt', cellkind.toString())
+        fs.appendFileSync('./competition.txt', 'ended competition at time '+this.time)+'\n'
+        fs.appendFileSync('./competition.txt', cellkind.toString()+'\n')
         throw ""
     }
 }
