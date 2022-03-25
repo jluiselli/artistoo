@@ -4559,7 +4559,6 @@ class Cell {
 	 * variable setting for evolvable parameters within cell class 
 	 * Note that this is the same implementation as done in Constraint;
 	 * because of data sharing within these two places it is reimplemented
-	 * I.E. THIS IS VERY UGLY - redundant
 	 *
 	 * @param {String} param - the name of the parameter to search 
 	 * @returns {Any} - the requested parameter, from this object if evolvable, from conf if not 
@@ -5041,32 +5040,6 @@ class Products {
         }
     }
 
-    mutate(chance){
-        let change_arr = [];
-        for ( let ix = 0; ix < this.arr.length; ix++){
-            change_arr += [this.binomial(this.arr[ix], chance)];
-        }
-        return change_arr
-    }
-
-    add(arr){
-        if (!(arr.length == this.arr.length)){
-            throw ""
-        }
-        for ( let ix = 0; ix < this.arr.length; ix++){
-            this.arr[ix] += parseInt(arr[ix]);
-        }
-    }
-
-    remove(arr){
-        if (!(arr.length == this.arr.length)){
-            throw ""
-        }
-        for ( let ix = 0; ix < this.arr.length; ix++){
-            this.arr[ix] -= parseInt(arr[ix]);
-        }
-    }
-
     /* eslint-disable */
     binomial(n, p){
         let log_q = Math.log(1.0-p), k = 0, sum = 0;
@@ -5231,7 +5204,7 @@ class Mitochondrion extends SubCell {
 			return
 		}
 
-		this.write("./Mit_deaths.txt", this.stateDct());
+		this.write("./deaths.txt", this.stateDct());
 	}
 
 	/**
@@ -5296,12 +5269,10 @@ class Mitochondrion extends SubCell {
 	deprecateProducts(){
 		this.products.deprecate(this.cellParameter("deprecation_rate"));
 		this.bad_products.deprecate(this.cellParameter("deprecation_rate"));
-		for (let dna of this.DNA.values()){ // DNA mutation
+        
+		for (let dna of this.DNA.values()){
 			dna.mutate(this.cellParameter("MTDNA_MUT_ROS") * this.ros);
 		}
-		let mutated_prot = this.products.mutate(Math.min(0.9999,this.cellParameter("PROT_MUT_ROS") * this.ros));
-		this.products.remove(mutated_prot);
-		this.bad_products.add(mutated_prot);
 	}
 
 	/**
@@ -5401,14 +5372,13 @@ class Mitochondrion extends SubCell {
 		}
         
 		/** Start new replication attempts and do translation events
-         * NOTE:  replication only blocks translation on the first step, which is 
-		 * weird! it might be good to go back to mutex replication/translation 
+         * NOTE: there is currently an edge (which won't be reached often)
+         * where replication does block translation, as starting replicating can 
+         * block translation
+         * 
+         * NOTE2: it might be good to go back to mutex replication/translation 
          * anyway as this is more like the biological system (although it is
          * harder with the proteolysis and division of replisome machinery)
-		 * 
-		 * NOTE2:
-		 * Translation does all proteins of this mtDNA copy - big assumption;
-		 * 
          */
 		for (let dna of this.DNA){
 			if (replicate_attempts + translate_attempts <= 0){
@@ -5542,31 +5512,14 @@ class Mitochondrion extends SubCell {
 	 * @param {Object} dct - output object
 	 */
 	write(logpath, dct){
-		if (!this.fs){
-			this.fs = require("fs");
-		}
-		if (!this.fs.existsSync(logpath)){
-			let deathstr = "";
-			for (let key in dct){
-				deathstr += key + ";";
-			}
-			deathstr += "\n";
-			this.fs.appendFileSync(logpath, deathstr);
-		}
-		let deathstr = "";
-		for (let key in dct){
-			if (key == "evolvables"){
-				for (let key2 in dct[key]){
-					deathstr += dct[key][key2]+";";
-				}
-			}
-			else {
-				deathstr += dct[key]+";";
-			}
-		}
-		deathstr += "\n";
-		this.fs.appendFileSync(logpath, deathstr);
-	}  
+		let objstring = JSON.stringify(dct) + "\n";
+		if( !(typeof window !== "undefined" && typeof window.document !== "undefined") ){
+			if (!this.fs){
+				this.fs = require("fs");
+			}    
+			this.fs.appendFileSync(logpath, objstring);
+		}   
+	}
 }
 
 class nDNA extends DNA {
@@ -5741,7 +5694,7 @@ class HostCell extends SuperCell {
 			this.write("debug.log", {"message": "Host died with extant subcells, please mind the balance in your model", "cell" : this.stateDct()});
 			mito.V = -50; // if this is necessary coul
 		}
-		this.write("./Host_deaths.txt", this.stateDct()); 
+		this.write("./deaths.txt", this.stateDct()); 
 	}
 	
 	/** Get standard Normal variate from univariate using Box-Muller transform.
@@ -5800,38 +5753,14 @@ class HostCell extends SuperCell {
 	 * @param {Object} dct - output object
 	 */
 	write(logpath, dct){
-		if (!this.fs){
-			this.fs = require("fs");
-		}
-		if (!this.fs.existsSync(logpath)){
-			let deathstr = "";
-			for (let key in dct){
-				if (key == "evolvables"){
-					for (let key2 in dct[key]){
-						deathstr += "evolvables_" + key2 + ";";
-					}
-				}
-				else {
-					deathstr += key + ";";
-				}
-			}
-			deathstr += "\n";
-			this.fs.appendFileSync(logpath, deathstr);
-		}
-		let deathstr = "";
-		for (let key in dct){
-			if (key == "evolvables"){
-				for (let key2 in dct[key]){
-					deathstr += dct[key][key2]+";";
-				}
-			}
-			else {
-				deathstr += dct[key]+";";
-			}
-		}
-		deathstr += "\n";
-		this.fs.appendFileSync(logpath, deathstr);
-	}   
+		let objstring = JSON.stringify(dct) + "\n";
+		if(!( typeof window !== "undefined" && typeof window.document !== "undefined" )){
+			if (!this.fs){
+				this.fs = require("fs");
+			}    
+			this.fs.appendFileSync(logpath, objstring);
+		}   
+	}
 }
 
 /**
@@ -9073,6 +9002,7 @@ class Simulation {
 		while( this.time < this.conf["RUNTIME"] ){
 		
 			this.step();
+			
 		}
 	}
 	

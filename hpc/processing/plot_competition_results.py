@@ -20,7 +20,6 @@ for f in os.listdir(folder):
         print(line)
         victories += [int(line)]
         ifs.close()
-        print(f+" completed")
 
     except:
         print("reading error for "+f)
@@ -31,6 +30,7 @@ fig, ax = plt.subplots(1, 1, figsize=(15,10))
 
 ax.hist(victories)
 
+ax.set_ylabel(col)
 ax.set_xlabel('Winner')
 ax.set_title("Nb of wins for each strain")
 
