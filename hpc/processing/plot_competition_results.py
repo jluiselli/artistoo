@@ -59,7 +59,6 @@ else:
             
 
             while line:
-                print(line)
                 time, distr = line.split(";")
                 ones = np.char.count([str(distr)], "1")[0]
                 twos = np.char.count([str(distr)], "2")[0]
@@ -80,19 +79,21 @@ else:
             print("reading error for "+f)
             tmp_df = pd.DataFrame()
         
+        print(tmp_df.shape)
         df = pd.concat([df, tmp_df], sort=False)
     
     df.to_csv(folder+'/competition_time.csv')
 
 
 print(df.shape)
-# df = df.sample(frac=0.002) # Otherwise too long to plot
+df = df.sample(frac=0.5) # Otherwise too long to plot
 df["seed"] = df["seed"].astype(str) # To get categorical in hue color
 df["ncells"] = df["ones"]*100/df["prop_1"]
 
-fig, ax = plt.subplots(1, 2, figsize=(15,10))
-sns.lineplot(data=df, x='time',y='prop_1', hue='seed', ax=ax[0], linewidth=3)
-sns.lineplot(data=df, x='time',y='ncells', hue='seed', ax=ax[1], linewidth=3)
+fig, ax = plt.subplots(1, 1, figsize=(15,10))
+sns.lineplot(data=df, x='time',y='prop_1', hue='seed', ax=ax, linewidth=3)
+ax2 = ax.twinx()
+sns.lineplot(data=df, x='time',y='ncells', hue='seed', ax=ax2, linewidth=3)
 ax.set_ylim(0,1)
 ax.axhline(y=0.5, color='grey')
 fig.tight_layout()
