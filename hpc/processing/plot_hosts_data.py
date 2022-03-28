@@ -18,7 +18,7 @@ try:
     print(hosts.columns)
     try:
         hosts = hosts.drop(['time of birth','good','bads','dna','type'], axis=1)
-        hosts = hosts.drop(['evolvables', 'subcells'], axis=1)
+        hosts = hosts.drop([i for i in hosts.columns if i[:7]=='Unnamed'], axis=1)
     except:
         pass
     hosts = hosts.replace({'undefined':np.NaN})
@@ -41,13 +41,18 @@ usual_colors = ['tab:blue', 'tab:orange', 'tab:green','tab:purple','tab:red',
 'tab:pink','tab:brown'] 
 
 
-hosts['growth_rate']=hosts['growth_rate'].replace({15:1.5, 5:0.5})
-hosts = hosts.fillna(0)
+try:
+    hosts['growth_rate']=hosts['growth_rate'].replace({15:1.5, 5:0.5})
+except:
+    pass
+
+hosts = hosts[hosts['time']<300000]
+hosts = hosts.astype(float)
 
 interest_params = ['total_vol', 'vol', 'n mito','total_oxphos']
-interest_params += [i[12:] for i in hosts.columns if i[:11]=='evolvables']
-for ev in [i for i in hosts.columns if i[:11]=='evolvables']:
-    df = df.rename(columns = {ev : ev[12:]})
+interest_params += [i[11:] for i in hosts.columns if i[:10]=='evolvables']
+for ev in [i for i in hosts.columns if i[:10]=='evolvables']:
+    hosts = hosts.rename(columns = {ev : ev[11:]})
 
 if params[-1]=='seed':
     unique_plots = True
@@ -72,7 +77,6 @@ if unique_plots:
             tmp = tmp[tmp[k]==c[i]]
             i+=1
         for ev in interest_params:
-            hosts[ev]=hosts[ev].astype(float)
             print(ev)
             d = {}
             i=0
@@ -82,7 +86,6 @@ if unique_plots:
             colors = [d[i] for i in tmp['seed']]
             
             fig, ax = plt.subplots(1, 1, figsize=(15,10))
-            tmp[ev]=tmp[ev].astype(float)
             tmp.plot.scatter(x='time', y=ev, c=colors, label=k,
                 alpha=0.1, s=2, ax=ax
                 )
@@ -131,23 +134,15 @@ for k in params: # different values given at the beginning of the simulation
         fig.savefig(folder+'/processing/hosts/'+ev+'_time_'+k+'.png',dpi=600)
         plt.close(fig)
 
-        fig, ax = plt.subplots(2, 1, figsize=(15,15))
+        fig, ax = plt.subplots(1, 1, figsize=(15,10))
         for unique_value in hosts[k].unique():
             tmp = hosts[hosts[k]==unique_value]
-            X = [np.median(tmp[tmp['time']==t][ev]) for t in tmp['time'].unique()]
             Z = [np.mean(tmp[tmp['time']==t][ev]) for t in tmp['time'].unique()]
             lab = str(k)+' '+str(unique_value)
-            ax[0].scatter(tmp['time'].unique(), X, label=lab, alpha=.6)
-            ax[1].scatter(tmp['time'].unique(), Z, label=lab, alpha=.6)
-        ax[0].set_ylabel(ev)
-        ax[0].legend()
-        ax[0].set_xlabel('time')
-        ax[0].set_title("Median "+ev+" over time for different "+k)
-        ax[0].set_ylim(min(hosts[ev]),max(hosts[ev]))
-        ax[0].set_ylim(min(hosts[ev]),max(hosts[ev]))
-        ax[1].set_ylabel(ev)
-        ax[1].set_xlabel('time')
-        ax[1].set_title("Mean "+ev+" over time for different "+k)
+            ax.scatter(tmp['time'].unique(), Z, label=lab, alpha=.6)
+        ax.set_ylabel(ev)
+        ax.set_xlabel('time')
+        ax.set_title("Mean "+ev+" over time for different "+k)
         fig.tight_layout()
         fig.savefig(folder+'/processing/hosts/'+ev+'_time_'+k+'_summarize.png',dpi=600)
         plt.close(fig)
@@ -180,23 +175,16 @@ for k in params: # different values given at the beginning of the simulation
                     fig.savefig(folder+'/processing/hosts/'+ev+'_time_'+other_param+"_"+str(unique_value)+'.png',dpi=600)
                     plt.close(fig)
                 
-                    fig, ax = plt.subplots(2, 1, figsize=(15,15))
+                    fig, ax = plt.subplots(1, 1, figsize=(15,10))
                     for value in hosts[other_param].unique():
                         tmp2 = tmp[tmp[other_param]==value]
-                        X = [np.median(tmp2[tmp2['time']==t][ev]) for t in tmp2['time'].unique()]
                         Z = [np.mean(tmp2[tmp2['time']==t][ev]) for t in tmp2['time'].unique()]
                         lab = str(other_param)+' '+str(value)
-                        ax[0].scatter(tmp2['time'].unique(), X, label=lab, alpha=.6)
-                        ax[1].scatter(tmp2['time'].unique(), Z, label=lab, alpha=.6)
-                    ax[0].set_ylabel(ev)
-                    ax[0].legend()
-                    ax[0].set_xlabel('time')
-                    ax[0].set_title("Median "+ev+" over time for different "+other_param+"\n"+k+" is "+str(unique_value))
-                    ax[0].set_ylim(min(tmp[ev]),max(tmp[ev]))
-                    ax[1].set_ylim(min(tmp[ev]),max(tmp[ev]))
-                    ax[1].set_ylabel(ev)
-                    ax[1].set_xlabel('time')
-                    ax[1].set_title("Mean "+ev+" over time for different "+other_param+"\n"+k+" is "+str(unique_value))
+                        ax.scatter(tmp2['time'].unique(), Z, label=lab, alpha=.6)
+                    ax.set_ylim(0.9*min(Z),1.1*max(Z))
+                    ax.set_ylabel(ev)
+                    ax.set_xlabel('time')
+                    ax.set_title("Mean "+ev+" over time for different "+other_param+"\n"+k+" is "+str(unique_value))
                     fig.tight_layout()
                     fig.savefig(folder+'/processing/hosts/'+ev+'_time_'+k+'-'+str(unique_value)+'_'+other_param+'_summarize.png',dpi=600)
                     plt.close(fig)

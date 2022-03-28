@@ -16,6 +16,7 @@ params = sys.argv[2:]
 try:
     mit=pd.read_csv(folder+'/mit.csv', low_memory=False, sep=';')
     mit = mit.drop(['products', 'bad products', 'sum dna', 'new DNA ids'], axis=1)
+    mit = mit.drop([i for i in hosts.columns if i[:7]=='Unnamed'], axis=1)
     mit = mit.astype(float)
     # mit = mit.sample(frac=.5)
     print(mit.columns)
@@ -75,41 +76,19 @@ if unique_plots:
                 i+=1
             colors = [d[i] for i in tmp['seed']]
 
-            fig, ax = plt.subplots(2, 1, figsize=(15,15))
+            fig, ax = plt.subplots(1, 1, figsize=(15,10))
             for seed in mit['seed'].unique():
                 tmp2 = tmp[tmp['seed']==seed]
-                X = [np.median(tmp2[tmp2['time']==t][ev]) for t in tmp2['time'].unique()]
                 Z = [np.mean(tmp2[tmp2['time']==t][ev]) for t in tmp2['time'].unique()]
                 lab = 'seed '+str(seed)
-                ax[0].scatter(tmp2['time'].unique(), X, label=lab, alpha=.6)
-                ax[1].scatter(tmp2['time'].unique(), Z, label=lab, alpha=.6)
-            ax[0].set_ylabel(ev)
-            ax[0].set_xlabel('time')
-            ax[0].legend()
-            ax[0].set_title("Median "+ev+" over time for "+str(c))
-            ax[1].set_ylabel(ev)
-            ax[1].set_xlabel('time')
-            ax[1].set_title("Mean "+ev+" over time for "+str(c))
+                ax.scatter(tmp2['time'].unique(), Z, label=lab, alpha=.6)
+            ax.set_ylabel(ev)
+            ax.set_xlabel('time')
+            ax.set_title("Mean "+ev+" over time for "+str(c))
             fig.tight_layout()
             fig.savefig(folder+'/processing/mit/'+ev+'_time_'+str(c)+'.png',dpi=600)
             plt.close(fig)
             
-            # fig, ax = plt.subplots(1, 1, figsize=(15,10))
-            # tmp[ev]=tmp[ev].astype(float)
-            # tmp.plot.scatter(x='time', y=ev, c=colors, label=k,
-            #     alpha=0.1, s=2, ax=ax
-            #     )
-            
-            # ax.set_ylim(min(mit[ev]), max(mit[ev]))
-            # ax.set_ylabel(ev)
-            # ax.set_xlabel('time')
-            # ax.legend(handles = [mpatches.Patch(color=d[k], label=k) for k in d.keys()], title = 'seed')
-            # ax.set_title(ev+" over time "+str(c))
-
-            # fig.tight_layout()
-            # fig.savefig(folder+'/processing/mit/'+ev+'_time_'+str(c)+'.png',dpi=600)
-            # plt.close(fig)
-
     print("finished unique plots. On to merged seeds")
 
 for k in params: # different values given at the beginning of the simulation
@@ -117,8 +96,6 @@ for k in params: # different values given at the beginning of the simulation
     
     for ev in interest_params:
         print(ev, " starting")
-        # mit[ev] = mit[ev].astype(float)
-        # print(mit[ev].iloc[0])
         d = {}
         i=0
         try:
@@ -144,21 +121,15 @@ for k in params: # different values given at the beginning of the simulation
         # fig.savefig(folder+'/processing/mit/'+ev+'_time_'+k+'.png',dpi=600)
         # plt.close(fig)
 
-        fig, ax = plt.subplots(2, 1, figsize=(15,15))
+        fig, ax = plt.subplots(1, 1, figsize=(15,10))
         for unique_value in mit[k].unique():
             tmp = mit[mit[k]==unique_value]
-            X = [np.median(tmp[tmp['time']==t][ev]) for t in tmp['time'].unique()]
             Z = [np.mean(tmp[tmp['time']==t][ev]) for t in tmp['time'].unique()]
             lab = str(k)+' '+str(unique_value)
-            ax[0].scatter(tmp['time'].unique(), X, label=lab, alpha=.6)
-            ax[1].scatter(tmp['time'].unique(), Z, label=lab, alpha=.6)
-        ax[0].set_ylabel(ev)
-        ax[0].set_xlabel('time')
-        ax[0].legend()
-        ax[0].set_title("Median "+ev+" over time for different "+k)
-        ax[1].set_ylabel(ev)
-        ax[1].set_xlabel('time')
-        ax[1].set_title("Mean "+ev+" over time for different "+k)
+            ax.scatter(tmp['time'].unique(), Z, label=lab, alpha=.6)
+        ax.set_ylabel(ev)
+        ax.set_xlabel('time')
+        ax.set_title("Mean "+ev+" over time for different "+k)
         fig.tight_layout()
         fig.savefig(folder+'/processing/mit/'+ev+'_time_'+k+'_summarize.png',dpi=600)
         plt.close(fig)
