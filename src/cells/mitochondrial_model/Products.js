@@ -56,15 +56,21 @@ class Products {
     }
 
     mutate(chance){
-        let change_arr = []
+        let change_arr = new Array(this.arr.length).fill(0)
         for ( let ix = 0; ix < this.arr.length; ix++){
-            change_arr += [this.binomial(this.arr[ix], chance)]
+            change_arr[ix] = [this.binomial(this.arr[ix], chance)]
         }
         return change_arr
     }
 
     add(arr){
         if (!(arr.length == this.arr.length)){
+            console.log("received arr of length ", arr.length)
+            console.log("but target is of length ", this.arr.length)
+            console.log("should have add")
+            console.log(arr)
+            console.log("to")
+            console.log(this.arr)
             throw ""
         }
         for ( let ix = 0; ix < this.arr.length; ix++){
@@ -74,6 +80,12 @@ class Products {
 
     remove(arr){
         if (!(arr.length == this.arr.length)){
+            console.log("received arr of length ", arr.length)
+            console.log("but target is of length ", this.arr.length)
+            console.log("should have removed")
+            console.log(arr)
+            console.log("from")
+            console.log(this.arr)
             throw ""
         }
         for ( let ix = 0; ix < this.arr.length; ix++){
