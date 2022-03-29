@@ -424,6 +424,7 @@ function drawOnTop(){
     this.Cim.ctx.strokeText(colorby + " " + now, 10, 35);
 }
 
+let logpath = "./"+config['simsettings']["LOGPATH"]+'/'+config['simsettings']["EXPNAME"]+"log.txt"
 let mitlogpath = "./"+config['simsettings']["LOGPATH"]+'/Mit_'+config['simsettings']["EXPNAME"]+"log.txt"
 let hostlogpath = "./"+config['simsettings']["LOGPATH"]+'/Hosts_'+config['simsettings']["EXPNAME"]+"log.txt"
 let complogpath = "./competition_log.txt"

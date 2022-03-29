@@ -92,8 +92,8 @@ df["ncells"] = df["ones"]*100/df["prop_1"]
 
 fig, ax = plt.subplots(1, 1, figsize=(15,10))
 sns.lineplot(data=df, x='time',y='prop_1', hue='seed', ax=ax, linewidth=3)
-ax2 = ax.twinx()
-sns.lineplot(data=df, x='time',y='ncells', hue='seed', ax=ax2, linewidth=3)
+# ax2 = ax.twinx()
+# sns.lineplot(data=df, x='time',y='ncells', hue='seed', ax=ax2, linewidth=3)
 ax.set_ylim(0,1)
 ax.axhline(y=0.5, color='grey')
 fig.tight_layout()
