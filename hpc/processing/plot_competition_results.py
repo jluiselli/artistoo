@@ -88,7 +88,9 @@ else:
 print(df.shape)
 df = df.sample(frac=0.5) # Otherwise too long to plot
 df["seed"] = df["seed"].astype(str) # To get categorical in hue color
-df["ncells"] = df["ones"]*100/df["prop_1"]
+# df["ncells"] = df["ones"]*100/df["prop_1"]
+
+print(df)
 
 fig, ax = plt.subplots(1, 1, figsize=(15,10))
 sns.lineplot(data=df, x='time',y='prop_1', hue='seed', ax=ax, linewidth=3)
