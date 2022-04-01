@@ -49,6 +49,7 @@ Y = X.drop([col for col in X.columns if col[:4]=="evol"], axis=1)
 for p in params:
     # fig, ax = plt.subplots(1, 1, figsize=(15,10))
     X = hosts.drop([p for p in params], axis=1)
+    X = X.drop(['time', 'id'], axis=1)
     Y = X.drop([col for col in X.columns if col[:4]=="evol"], axis=1)
     pca = PCA(n_components=2)
     components = pca.fit_transform(X)
@@ -68,6 +69,7 @@ for p in params:
             tmp = hosts[hosts[p]==unique_value]
             tmp['seed']=tmp['seed'].astype(str)
             X = tmp.drop([p for p in params], axis=1)
+            X = X.drop(['time', 'id'], axis=1)
             Y = X.drop([col for col in X.columns if col[:4]=="evol"], axis=1)
             pca = PCA(n_components=2)
             components = pca.fit_transform(X)
