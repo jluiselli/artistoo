@@ -146,6 +146,8 @@ for k in params:
                         ax.set_ylim(min(df['fusion_rate']), max(df['fusion_rate']))
                         ax.set_ylabel('fusion_rate')
                         ax.set_xlabel(val)
+                        if val=="n DNA" or val=="vol_mit":
+                            ax.set_xscale('log')
                         ax.legend(handles = [mpatches.Patch(color=d[k], label=k) for k in d.keys()], title = other_param)
                         ax.set_title("fusion rate against "+val+" with "+k+"="+str(unique_value))
 

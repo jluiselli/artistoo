@@ -8,10 +8,23 @@ import ast
 import random
 import colorsys
 import itertools
+import argparse
+ 
+# Initialize parser
+parser = argparse.ArgumentParser()
 
+# Adding optional argument
+parser.add_argument("folder", help="folder in which to run the code")
+parser.add_argument("-c", "--competition", help = "Specify that dual values are expected", action="store_true")
+parser.add_argument("-p", dest='params', help="parameters in folder names to use", nargs='+')
+parser.add_argument("-v", "--verbose", help="print more information", action="store_true")
+ 
+# Read arguments from command line
+args = parser.parse_args()
+print(args)
 
-folder = sys.argv[1]
-params = sys.argv[2:]
+folder = args.folder
+params = args.params
 
 try:
     hosts=pd.read_csv(folder+'/hosts.csv', low_memory=False, sep=";", dtype=str)
@@ -21,13 +34,19 @@ try:
         hosts = hosts.drop(['evolvables', 'subcells'], axis=1)
     except:
         pass
-    hosts = hosts.replace({'undefined':np.NaN})
     try:
         hosts['degradation'] = hosts['degradation'].replace({'001':'0.01', '01':'0.1', '005':'0.05'})
     except:
         pass
+    if args.competition:
+        print("COMPETITION !")
+        raise Exception
+        
+    hosts = hosts.replace({'undefined':'np.NaN'})
     hosts = hosts.astype(float)
     # hosts = hosts.sample(frac=.5)
+except Exception:
+    raise Exception("Plotting of competing populations not handled yet.")
 except:
     print("Data must have been aggregated with aggregate.py before")
 
@@ -49,7 +68,13 @@ try:
 except:
     pass
 
+<<<<<<< HEAD
 hosts = hosts.fillna(0)
+=======
+hosts['time'] = hosts['time'].astype(float)
+hosts = hosts[hosts['time']<300000]
+hosts = hosts.astype(float)
+>>>>>>> 5548bb0 (updated plots)
 
 interest_params = ['total_vol', 'vol', 'n mito','total_oxphos']
 interest_params += [i[11:] for i in hosts.columns if i[:10]=='evolvables']
