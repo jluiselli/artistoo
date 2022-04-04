@@ -80,13 +80,13 @@ class HostCell extends SuperCell {
 		
 		/** Do mutation steps on evolvables */
 		for (const evolvable in this.conf["evolvables"]){
-			this[evolvable] = parent.cellParameter(evolvable)
-			this[evolvable] += this.conf["evolvables"][evolvable]["sigma"] * this.rand_normal()
+			this[evolvable] = [...parent[evolvable]]
+			this[evolvable][this.kind-1] += this.conf["evolvables"][evolvable]["sigma"] * this.rand_normal()
 			if (this.conf["evolvables"][evolvable]["lower_bound"] !== undefined){
-				this[evolvable] = Math.max(this[evolvable], this.conf["evolvables"][evolvable]["lower_bound"])
+				this[evolvable][this.kind-1] = Math.max(this[evolvable][this.kind-1], this.conf["evolvables"][evolvable]["lower_bound"])
 			}
 			if (this.conf["evolvables"][evolvable]["upper_bound"] !== undefined){
-				this[evolvable] = Math.min(this[evolvable], this.conf["evolvables"][evolvable]["upper_bound"])
+				this[evolvable][this.kind-1] = Math.min(this[evolvable][this.kind-1], this.conf["evolvables"][evolvable]["upper_bound"])
 			}
 		}
 	}
