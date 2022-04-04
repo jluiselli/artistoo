@@ -73,6 +73,7 @@ let config = {
 		SELECTIVE_FUSION: false,
 
 		MITO_PARTITION : 0.5,
+        MITO_DIV_VOLUME : 75,
 
 
 		// VolumeConstraint parameters
@@ -133,6 +134,7 @@ sim = new CPM.Simulation( config, custommethods )
 const {
     performance
   } = require('perf_hooks');
+const { CHAR_VERTICAL_LINE } = require("braces/lib/constants")
 let starttime = performance.now()
 
 
@@ -180,9 +182,16 @@ function postMCSListener(){
         let cell = this.C.cells[cid]
         if (cell instanceof CPM.SubCell){
             if (this.C.random() < (cell.cellParameter("fission_rate") * cell.vol) && cell.vol > 2){
-                this.C.cells[cell.host].fission_events++
-                this.gm.divideCell(cid, cell.cellParameter('MITO_PARTITION'))
-
+                if (cell.cellParameter('MITO_DIV_VOLUME')==-1){ // No fixed daughter cell size
+                    this.C.cells[cell.host].fission_events++
+                    this.gm.divideCell(cid, cell.cellParameter('MITO_PARTITION'))    
+                }
+                else if (cell.vol >= 2*cell.cellParameter('MITO_DIV_VOLUME')){ // Create daugther of fixed size
+                    this.C.cells[cell.host].fission_events++
+                    this.gm.divideCell(cid, cell.cellParameter('MITO_DIV_VOLUME')/cell.vol) 
+                    // Paritition is determined by the size of the cell
+                }
+               
             } 
             if (this.C.random() <cell.cellParameter("fusion_rate") ){
                 let fuser = pickFuser(cell)
