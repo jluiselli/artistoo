@@ -102,7 +102,7 @@ for subfolder in subfolders:
 
             lineage.plot.scatter(x='time', y=col, alpha=0.9, s=10, ax=ax)
 
-            # Mean = [np.mean(lineage[lineage['time']==t][col]) for t in lineage['time'].unique()]
+            Mean = [np.mean(lineage[lineage['time']==t][col]) for t in lineage['time'].unique()]
 
             # plt.plot(lineage['time'].unique(), Mean, color='tab:red')  
             plt.plot(pd.DataFrame(lineage['time'].unique()).rolling(50).mean(),
