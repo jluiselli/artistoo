@@ -100,9 +100,11 @@ def read_deaths_births(fname, verbose=True, start=None, stop=None):
             except:
                 tmp = json.loads(tmp_df["daughter"])
                 tmp_df = pd.DataFrame.from_dict(tmp, orient='index').T["time"] #division
+                tmp_df["type"]="host"
             
             if tmp_df['time'].iloc[0]%10000==0:
                 print("time:",tmp_df['time'].iloc[0])
+                print(data)
 
             tmp_df = tmp_df[['time','type']]
             data = pd.concat([data, tmp_df], sort=False)

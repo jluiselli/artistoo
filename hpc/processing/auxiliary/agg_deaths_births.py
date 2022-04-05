@@ -20,13 +20,18 @@ for f in os.listdir(folder):
     print(params)
     try:   
         deaths_tmp = rd.read_deaths_births(fname='./'+folder+'/'+f+"/deaths.txt")
+        print(deaths_tmp)
+        print(folder+'/'+f+'/deaths.csv')
+        for k in params:
+            deaths_tmp[k] = float(params[k])
+        deaths_tmp.to_csv(folder+'/'+f+'/deaths.csv', sep=';')
         divisions_tmp = rd.read_deaths_births(fname='./'+folder+'/'+f+"/divisions.txt")
         
         for k in params:
-            deaths_tmp[k] = float(params[k])
             divisions_tmp[k] = float(params[k])
         
-        deaths_tmp.to_csv(folder+'/'+f+'/deaths.csv', sep=';')
+        print(divisions_tmp)
+        print(folder+'/'+f+'/deaths.csv')
         divisions_tmp.to_csv(folder+'/'+f+'/divisions.csv', sep=';')
         
         deaths = pd.concat([deaths, deaths_tmp], sort=False)
