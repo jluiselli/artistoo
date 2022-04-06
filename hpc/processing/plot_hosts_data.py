@@ -134,7 +134,6 @@ if unique_plots:
     if args.verbose:
         print("finished unique plots. On to merged seeds")
           
-
 for k in params: # different values given at the beginning of the simulation
     if args.verbose:
         print(k)
