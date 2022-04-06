@@ -52,7 +52,7 @@ if not os.path.isdir(folder+'/processing/'):
     os.mkdir(folder+'/processing/')
 
 if args.clean:
-    shutil.rmtree(folder+'/processing/mit/')
+    shutil.rmtree(folder+'/processing/mit/', ignore_error=True)
 
 if not os.path.isdir(folder+'/processing/mit/'):
     print('The directory is not present (or was deleted). Creating a new one..')

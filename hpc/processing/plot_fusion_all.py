@@ -94,7 +94,7 @@ if not os.path.isdir(folder+'/processing/'):
     os.mkdir(folder+'/processing/')
 
 if args.clean:
-    shutil.rmtree(folder+'/processing/fusion/')
+    shutil.rmtree(folder+'/processing/fusion/', ignore_error=True)
 
 if not os.path.isdir(folder+'/processing/fusion/'):
     print('The directory is not present or has been deleted. Creating a new one..')
