@@ -91,7 +91,7 @@ if not os.path.isdir(folder+'/processing/'):
     os.mkdir(folder+'/processing/')
 
 if args.clean:
-    shutil.rmtree(folder+'/processing/end_values/', ignore_error=True)
+    shutil.rmtree(folder+'/processing/end_values/', ignore_errors=True)
 
 if not os.path.isdir(folder+'/processing/end_values/'):
     print('The directory is not present or has been removed. Creating a new one..')
