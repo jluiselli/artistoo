@@ -56,7 +56,7 @@ if not os.path.isdir(folder+'/processing/'):
     os.mkdir(folder+'/processing/')
 
 if args.clean:
-    shutil.rmtree(folder+'/processing/pca/', ignore_errpr=True)
+    shutil.rmtree(folder+'/processing/pca/', ignore_errors=True)
 
 if not os.path.isdir(folder+'/processing/pca/'):
     print('The directory pca is not present (or was deleted). Creating a new one..')
