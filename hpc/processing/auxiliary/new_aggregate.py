@@ -7,16 +7,19 @@ hosts, mit = pd.DataFrame(), pd.DataFrame()
 deaths_mit, deaths_host, divisions =  pd.DataFrame(), pd.DataFrame(), pd.DataFrame()
 
 for f in os.listdir(folder):
-    # k = f.replace('/',' ').split('_')
-    # i = iter(k)
-    # params = dict(zip(i,i))
-
     k = f.replace('/',' ').split('-')
-    try:
-        k[5] = k[5]+'-'+k[6]
-        k = k[:6]+k[7:]
-    except:
-        pass
+    i = 0
+    while i < len(k):
+        try:
+            if k[i][-2:]=='1e' or k[i][-2:]=='5e':
+                k[i] = k[i]+ '-' + k[i+1]
+                if i < len(k)-2:
+                    k = k[:i+1]+k[i+2:]
+                i=0
+                continue
+        except:
+            i+=1
+        i+=1
     i = iter(k)
     params = dict(zip(i,i))
 
