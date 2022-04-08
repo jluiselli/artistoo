@@ -104,13 +104,6 @@ if unique_plots:
         for ev in interest_params:
             if args.verbose:
                 print(ev)
-            d = {}
-            i=0
-            for value in tmp['seed'].unique():
-                d[value] = usual_colors[i]
-                i+=1
-            colors = [d[i] for i in tmp['seed']]
-
             fig, ax = plt.subplots(1, 1, figsize=(15,10))
             for seed in mit['seed'].unique():
                 tmp2 = tmp[tmp['seed']==seed]
@@ -122,16 +115,16 @@ if unique_plots:
             ax.set_title("Mean "+ev+" over time for "+str(c))
             ax.legend()
             fig.tight_layout()
-            fig.savefig(folder+'/processing/mit/'+ev+'_time_'+str(c)+'.png',dpi=600)
+            fig.savefig(folder+'/processing/mit/'+ev+'_time_'+str(c)+'_mean.png')
             plt.close(fig)
             
-    print("finished unique plots. On to merged seeds")
+    if args.verbose:
+        print("finished unique plots. On to merged seeds")
 
 for k in params: # different values given at the beginning of the simulation    
     for ev in interest_params:
-        print(ev, " starting")
-        d = {}
-        i=0
+        if args.verbose:
+            print(ev, " starting")
         try:
             mit[ev]=mit[ev].astype(float)
         except:
@@ -149,10 +142,11 @@ for k in params: # different values given at the beginning of the simulation
         ax.set_xlabel('time')
         ax.set_title("Mean "+ev+" over time for different "+k)
         fig.tight_layout()
-        fig.savefig(folder+'/processing/mit/'+ev+'_time_'+k+'_summarize.png',dpi=600)
+        fig.savefig(folder+'/processing/mit/'+ev+'_time_'+k+'_summarize.png')
         plt.close(fig)
 
-        print(ev,k," done")
+        if args.verbose:
+            print(ev,k," done")
 
         for unique_value in mit[k].unique():
             tmp = mit[mit[k]==unique_value]
@@ -174,7 +168,7 @@ for k in params: # different values given at the beginning of the simulation
                     ax.set_xlabel('time')
                     ax.set_title("Mean "+ev+" over time for different "+other_param+"\n"+k+" is "+str(unique_value))
                     fig.tight_layout()
-                    fig.savefig(folder+'/processing/mit/'+ev+'_time_'+k+'-'+str(unique_value)+'_'+other_param+'_summarize.png',dpi=600)
+                    fig.savefig(folder+'/processing/mit/'+ev+'_time_'+k+'-'+str(unique_value)+'_'+other_param+'_summarize.png')
                     plt.close(fig)
 
 
