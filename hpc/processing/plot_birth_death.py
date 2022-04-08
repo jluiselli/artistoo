@@ -69,14 +69,14 @@ for celltype in ['host','mito']:
     if args.verbose:
         print(celltype)
     deaths = df_deaths[df_deaths['type']==celltype]
-    divisions = df_divisions[df_divisions['type']==celltype]
+    divisions = df_divisions
     if unique_plots:
         if args.verbose:
             print("doing all unique plots")
         comb = []
         for k in params:
             tmp_list = []
-            for val in hosts[k].unique():
+            for val in deaths[k].unique():
                 tmp_list+=[val]
             comb += [tmp_list]
         combinations = list(itertools.product(*comb))
@@ -94,77 +94,83 @@ for celltype in ['host','mito']:
                 continue
             
             fig, ax = plt.subplots(1, 1, figsize=(15,10))
-            tmp_deaths.plot.hist(column='time', 
-                alpha=0.9, ax=ax  )
+            tmp_deaths["time"].plot.hist( alpha=0.9, ax=ax  )
             ax.set_ylabel('# deaths')
             ax.set_xlabel('time')
-            ax.set_title("# deaths over time "+str(c))
+            ax.set_title("# deaths over time "+str(c)+" "+celltype)
             fig.tight_layout()
-            fig.savefig(folder+'/processing/deaths_births/death_time_'+str(c)+'.png')
+            fig.savefig(folder+'/processing/deaths_births/death_time_'+str(c)+'_'+celltype+'.png')
             plt.close(fig)
 
             fig, ax = plt.subplots(1, 1, figsize=(15,10))
-            tmp_divisions.plot.hist(column='time', 
-                alpha=0.9, ax=ax  )
+            tmp_divisions["time"].plot.hist(alpha=0.9, ax=ax)
             ax.set_ylabel('# divisions')
             ax.set_xlabel('time')
             ax.set_title("# divisions over time "+str(c))
             fig.tight_layout()
-            fig.savefig(folder+'/processing/deaths_births/birth_time_'+str(c)+'.png')
+            fig.savefig(folder+'/processing/deaths_births/birth_time_'+str(c)+'_host.png')
             plt.close(fig)
 
-        params = params[:-1]
         if args.verbose:
             print("finished unique plots. On to merged seeds")
         
 
     for k in params: # different values given at the beginning of the simulation
-        if args.verbose:
-            print(k)
-        fig, ax = plt.subplots(1, 1, figsize=(15,10))
-        deaths.plot.hist(column='time', alpha=.4, by=k, ax=ax)
-        ax.set_ylabel('# deaths')
-        ax.set_xlabel('time')
-        ax.set_title("deaths over time for different "+k)
-        fig.tight_layout()
-        fig.savefig(folder+'/processing/deaths_births/death_time_'+k+'.png')
-        plt.close(fig)
+        if k!='seed':
+            if args.verbose:
+                print(k)
+            fig, ax = plt.subplots(1, 1, figsize=(15,10))
+            for x in deaths[k].unique():
+                ax.hist([deaths[deaths[k]==x]["time"]], label=x,
+                alpha=0.5)
+            ax.set_ylabel('# deaths')
+            ax.set_xlabel('time')
+            ax.legend(title=k)
+            ax.set_title("deaths over time for different "+k+" "+celltype)
+            fig.tight_layout()
+            fig.savefig(folder+'/processing/deaths_births/death_time_'+k+'_'+celltype+'.png')
+            plt.close(fig)
 
-        fig, ax = plt.subplots(1, 1, figsize=(15,10))
-        divisions.plot.hist(column='time', alpha=.4, by=k, ax=ax)
-        ax.set_ylabel('# divisions')
-        ax.set_xlabel('time')
-        ax.set_title("divisions over time for different "+k)
-        fig.tight_layout()
-        fig.savefig(folder+'/processing/births_births/birth_time_'+k+'.png')
-        plt.close(fig)
+            fig, ax = plt.subplots(1, 1, figsize=(15,10))
+            for x in divisions[k].unique():
+                ax.hist([divisions[divisions[k]==x]["time"]], label=x,
+                alpha=0.5)
+            ax.set_ylabel('# divisions')
+            ax.set_xlabel('time')
+            ax.legend(title=k)
+            ax.set_title("divisions over time for different "+k)
+            fig.tight_layout()
+            fig.savefig(folder+'/processing/deaths_births/birth_time_'+k+'.png')
+            plt.close(fig)
 
 
-        for unique_value in deaths[k].unique():
-            tmp_deaths = deaths[deaths[k]==unique_value]
-            tmp_divisions = divisions[divisions[k]==unique_value]
-            if tmp_deaths.empty or tmp_divisions.empty:
-                continue
-            for other_param in params:
-                if k!=other_param:
-                    fig, ax = plt.subplots(1, 1, figsize=(15,10))
-                    tmp_deaths.plot.hist(column='time', by=other_param,
-                        alpha=0.4, ax=ax
-                        )
-                    ax.set_ylabel('#deaths')
-                    ax.set_xlabel('time')
-                    ax.set_title("deaths over time for "+k+" "+str(unique_value))
-                    fig.tight_layout()
-                    fig.savefig(folder+'/processing/deaths_births/death_time_'+other_param+"_"+str(unique_value)+'.png')
-                    plt.close(fig)
+            for unique_value in deaths[k].unique():
+                tmp_deaths = deaths[deaths[k]==unique_value]
+                tmp_divisions = divisions[divisions[k]==unique_value]
+                if tmp_deaths.empty or tmp_divisions.empty:
+                    continue
+                for other_param in params:
+                    if k!=other_param:
+                        fig, ax = plt.subplots(1, 1, figsize=(15,10))
+                        for x in deaths[other_param].unique():
+                            ax.hist([deaths[deaths[other_param]==x]["time"]], label=x,
+                            alpha=0.5)
+                        ax.set_ylabel('#deaths')
+                        ax.set_xlabel('time')
+                        ax.legend(title=other_param)
+                        ax.set_title("deaths over time for "+k+" "+str(unique_value)+" "+celltype)
+                        fig.tight_layout()
+                        fig.savefig(folder+'/processing/deaths_births/death_time_'+k+"_"+str(unique_value)+'_'+celltype+'.png')
+                        plt.close(fig)
 
-                    fig, ax = plt.subplots(1, 1, figsize=(15,10))
-                    tmp_divisions.plot.hist(column='time', by=other_param,
-                        alpha=0.4, ax=ax
-                        )
-                    ax.set_ylabel('#deaths')
-                    ax.set_xlabel('time')
-                    ax.set_title("deaths over time for "+k+" "+str(unique_value))
-                    fig.tight_layout()
-                    fig.savefig(folder+'/processing/deaths_births/birth_time_'+other_param+"_"+str(unique_value)+'.png')
-                    plt.close(fig)
+                        fig, ax = plt.subplots(1, 1, figsize=(15,10))
+                        for x in divisions[other_param].unique():
+                            ax.hist([divisions[divisions[other_param]==x]["time"]], label=x,
+                            alpha=0.5)
+                        ax.set_ylabel('#deaths')
+                        ax.set_xlabel('time')
+                        ax.legend(title=other_param)
+                        ax.set_title("deaths over time for "+k+" "+str(unique_value))
+                        fig.tight_layout()
+                        fig.savefig(folder+'/processing/deaths_births/birth_time_'+k+"_"+str(unique_value)+'.png')
+                        plt.close(fig)
