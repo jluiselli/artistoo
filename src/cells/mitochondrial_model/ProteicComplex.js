@@ -1,7 +1,7 @@
 class ProteicComplex {
 
 	/* eslint-disable */ 
-	constructor (conf, C, t, bad_pos) {
+	constructor (conf, C, t, bad_pos){
         // this.C = C
         this.conf = conf
         this.C = C
@@ -24,7 +24,6 @@ class ProteicComplex {
         // -1 is non init
         this.bad_pos = bad_pos // position of the bad proteins
         this.deleted = false
-        this.deprecate(0)
     }
 
     deprecate(chance){
@@ -42,6 +41,24 @@ class ProteicComplex {
         return deleted_p
     }
 
+    mutate(chance){
+        let mutables = this.l - this.bad_pos.length
+        let mutated = []
+        if (mutables == 0){
+            return []
+        }
+        let mutations = this.binomial(mutables, chance)
+        while (mutations > 0){
+            let mutated_prot = this.C.ran(0,this.l-1)
+            while (this.bad_pos.includes(mutated_prot)){
+                mutated_prot = this.C.ran(0,this.l-1)
+            }
+            this.bad_pos.push(mutated_prot)
+            mutated.push(mutated_prot)
+            mutations--
+        }
+        return mutated
+    }
 
     /* eslint-disable */
     binomial(n, p){

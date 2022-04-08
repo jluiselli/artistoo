@@ -59,6 +59,44 @@ class Products {
         }
     }
 
+    mutate(chance){
+        let change_arr = new Array(this.arr.length).fill(0)
+        for ( let ix = 0; ix < this.arr.length; ix++){
+            change_arr[ix] = [this.binomial(this.arr[ix], chance)]
+        }
+        return change_arr
+    }
+
+    add(arr){
+        if (!(arr.length == this.arr.length)){
+            console.log("received arr of length ", arr.length)
+            console.log("but target is of length ", this.arr.length)
+            console.log("should have add")
+            console.log(arr)
+            console.log("to")
+            console.log(this.arr)
+            throw ""
+        }
+        for ( let ix = 0; ix < this.arr.length; ix++){
+            this.arr[ix] += parseInt(arr[ix])
+        }
+    }
+
+    remove(arr){
+        if (!(arr.length == this.arr.length)){
+            console.log("received arr of length ", arr.length)
+            console.log("but target is of length ", this.arr.length)
+            console.log("should have removed")
+            console.log(arr)
+            console.log("from")
+            console.log(this.arr)
+            throw ""
+        }
+        for ( let ix = 0; ix < this.arr.length; ix++){
+            this.arr[ix] -= parseInt(arr[ix])
+        }
+    }
+
     /* eslint-disable */
     binomial(n, p){
         let log_q = Math.log(1.0-p), k = 0, sum = 0

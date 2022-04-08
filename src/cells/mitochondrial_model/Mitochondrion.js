@@ -269,6 +269,8 @@ class Mitochondrion extends SubCell {
 		this.deprecateProducts()
 		this.deprecateComplexes()
 		this.mutateDNA()
+		this.mutateProducts()
+		this.mutateComplexes()
 		
 		/** add newly produced products only once all import also has been created */
 		// importandcreate() - called by host, as this controls import!
@@ -308,6 +310,24 @@ class Mitochondrion extends SubCell {
 	mutateDNA(){        
 		for (let dna of this.DNA.values()){
 			dna.mutate(this.cellParameter("MTDNA_MUT_ROS") * this.ros)
+		}
+	}
+
+	/**
+	 * Mutate Products with ROS
+	 */
+	mutateProducts(){        
+		let mutated_prot = this.products.mutate(Math.min(0.9999,this.cellParameter("PROT_MUT_ROS") * this.ros))
+		this.products.remove(mutated_prot)
+		this.bad_products.add(mutated_prot)
+	}
+
+	/**
+	 * Mutate Complexes with ROS
+	 */
+	mutateComplexes(){        
+		for (const [idx, cplx] of this.complexes.entries()){
+			cplx.mutate(Math.min(0.9999,this.cellParameter("PROT_MUT_ROS") * this.ros))
 		}
 	}
 
