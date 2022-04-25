@@ -195,9 +195,9 @@ class HostCell extends SuperCell {
 		dct["total_vol"] = this.total_vol
 		dct["fission events"] = this.fission_events
 		dct["fusion events"] = this.fusion_events
-		dct["evolvables"] = {}
 		for (const evolvable in this.conf.evolvables){
-			dct["evolvables"][evolvable] = this[evolvable]
+			let str = "evolvables_" + evolvable
+			dct[str] = this[evolvable]
 		}
 		return dct
 	}

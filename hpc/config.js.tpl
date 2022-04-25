@@ -12,7 +12,7 @@ let config = {
 	conf : {
 		// Basic CPM parameters
 		torus : [true,true],				// Should the grid have linked borders?
-		seed : 43894793,							// Seed for random number generation.
+		seed : 8547985743,							// Seed for random number generation.
 		T : 2,								// CPM temperature
         
     
@@ -31,9 +31,9 @@ let config = {
         N_INIT_DNA : 5,
 		MTDNA_MUT_REP : 0.0003,
 		MTDNA_MUT_INIT: 0.002,
-        MTDNA_MUT_ROS : 0.00005,
+        MTDNA_MUT_ROS : 0.000005,
 		NDNA_MUT_REP : 0,
-        NDNA_MUT_LIFETIME : 0.000001,
+        NDNA_MUT_LIFETIME : 0.000005,
 		INIT_HOST_V : 700,
 		INIT_OXPHOS : 10,
 		INIT_TRANSLATE : 10,
@@ -47,18 +47,21 @@ let config = {
         // First value is always cellkind 0 (the background) and is often not used.
 		REPLICATE_TIME: 30,
 		fission_rate : 0.00002,
-		fusion_rate : 0.00025,
+		fusion_rate : 0.001,
 		rep: 19,
 		rep2: 0,
-		evolvables: {"fission_rate": {"sigma" : 0.000001}, 
-							"fusion_rate":{"sigma" : 0.00003}, 
-							"rep": {"sigma" : 0.5}, 
+		evolvables: {"rep": {"sigma" : 0.5, "upper_bound":22}, 
 							"HOST_V_PER_OXPHOS":{"sigma" : 0.025}, 
 							"host_division_volume":{"sigma" : 75, "lower_bound" : 2, "upper_bound":5000}
 		 } ,
+        
+        evolvables_mit: {"fission_rate": {"sigma" : 0.000001}, 
+							"fusion_rate":{"sigma" : 0.00003},
+		 } ,
+
 		
 		deprecation_rate : 0.1,
-        PROT_MUT_ROS : 0.001,
+        PROT_MUT_ROS : 0,
 		
 		MITO_SHRINK : 1,
 		MITOPHAGY_THRESHOLD: 0,
@@ -73,7 +76,7 @@ let config = {
 		SELECTIVE_FUSION: false,
 
 		MITO_PARTITION : 0.5,
-        MITO_DIV_VOLUME : 75,
+        MITO_DIV_VOLUME : -1,
 
 
 		// VolumeConstraint parameters
@@ -91,7 +94,7 @@ let config = {
         // non-background cellkinds. 
         // Runtime etc
         BURNIN : 0,
-        RUNTIME : 1510,
+        RUNTIME : 1000,
         RUNTIME_BROWSER : "Inf",
         
         // Visualization
@@ -208,40 +211,17 @@ function postMCSListener(){
                     let parstr = ""
                     let daughterstr = ""
                     for (let key in cell.stateDct()){
-                        if (key == "evolvables"){
-                            for (let key2 in cell.stateDct()[key]){
-                                parstr += "parent_evolvables_" + key2 + ";"
-                                daughterstr += "daughter_evolvables_" + key2 + ";"
-                            }
-                        }
-                        else {
-                            parstr += "parent_" + key + ";"
-                            daughterstr += "daughter_" + key + ";"
-                        }
-                        
+                        parstr += "parent_" + key + ";"
+                        daughterstr += "daughter_" + key + ";"                        
                     }
                     fs.appendFileSync("divisions.txt", parstr+daughterstr+'\n')
                 }
                 let divstr = ""
                 for (let key in cell.stateDct()){
-                    if (key == "evolvables"){
-                        for (let key2 in cell.stateDct()[key]){
-                            divstr += cell.stateDct()[key][key2]+";"
-                        }
-                    }
-                    else {
-                        divstr += cell.stateDct()[key]+";"
-                    }
+                    divstr += cell.stateDct()[key]+";"
                 }
                 for (let key in this.C.cells[nid].stateDct()){
-                    if (key == "evolvables"){
-                        for (let key2 in this.C.cells[nid].stateDct()[key]){
-                            divstr += this.C.cells[nid].stateDct()[key][key2]+";"
-                        }
-                    }
-                    else {
-                        divstr += this.C.cells[nid].stateDct()[key]+";"
-                    }
+                    divstr += this.C.cells[nid].stateDct()[key]+";"
                 }
                 fs.appendFileSync("divisions.txt", divstr+'\n')
             }
@@ -462,14 +442,7 @@ function logStats(){
             let i = 0
             for (let key in jsonobj){
                 for (let key2 in jsonobj[key]){
-                        if (key2 == "evolvables"){
-                            for (let key3 in jsonobj[key][key2]){
-                                hoststr += "evolvables_"+key3+";"
-                            }
-                        }
-                        else {
-                            hoststr += key2+";"
-                        }
+                    hoststr += key2+";"
                 }
                 break
             }
@@ -484,14 +457,7 @@ function logStats(){
         }
         for (let key in jsonobj){
             for (let key2 in jsonobj[key]){
-                if (key2 == "evolvables"){
-                    for (let key3 in jsonobj[key][key2]){
-                        hoststr += jsonobj[key][key2][key3]+";"
-                    }
-                }
-                else {
-                    hoststr += jsonobj[key][key2]+";"
-                }
+                hoststr += jsonobj[key][key2]+";"
             }
             hoststr += '\n'
         }

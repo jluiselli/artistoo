@@ -41,6 +41,12 @@ class Mitochondrion extends SubCell {
      * 
      * Any parameters can also be controlled by the HostCell through 'evolvables' - but this still requires an 
      * initial value to be present in the conf object
+	 * 
+	 * @param {Object} [conf.evolvables_mit] - contains objects with keys of parameters that
+	 * can evolve, needs to contain conf.evolvables_mit.NAME.sigma - the standard deviation
+	 * of the evolving step. Can contain (conf.evolvables_mit.NAME.-) upper_bound and lower_bound
+	 * which are hard limits to evolutions. Initial value of the evolvable is taken as the conf.NAME
+	 * parameter
      */
 	constructor (conf, kind, id, C) {
 		super(conf, kind, id, C)
@@ -96,6 +102,15 @@ class Mitochondrion extends SubCell {
          * @type {Products}- a wrapper for an array of integers
          */
 		this.bad_products = new Products(this.conf, this.C)
+
+		/**
+		 * sets evolvable parameters as subcell-specific, so they
+		 * can accurately be adjusted later
+		 */
+		for (let evolvable in conf["evolvables_mit"]){
+			this[evolvable] = conf[evolvable]
+		}
+		
 	}
 	
 	/**
@@ -107,6 +122,16 @@ class Mitochondrion extends SubCell {
 		this.DNA = []
 		this.products = new Products(this.conf, this.C)
 		this.bad_products = new Products(this.conf, this.C)
+	}
+
+	/** Get standard Normal variate from univariate using Box-Muller transform.
+	 *  Code edited from https://stackoverflow.com/questions/25582882/javascript-math-random-normal-distribution-gaussian-bell-curve
+	 */ 
+	rand_normal() {
+		let u = 0, v = 0
+		while(u === 0) u = this.C.random() //Converting [0,1) to (0,1)
+		while(v === 0) v = this.C.random()
+		return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v )
 	}
 
 	/**
@@ -141,6 +166,18 @@ class Mitochondrion extends SubCell {
 		parent.V *= (1-partition)
 		//unused assemblies that cause less visualization errors:
 		this.makeAssemblies()
+
+		/** Do mutation steps on evolvables */
+		for (const evolvable in this.conf["evolvables_mit"]){
+			this[evolvable] = parent.cellParameter(evolvable)
+			this[evolvable] += this.conf["evolvables_mit"][evolvable]["sigma"] * this.rand_normal()
+			if (this.conf["evolvables_mit"][evolvable]["lower_bound"] !== undefined){
+				this[evolvable] = Math.max(this[evolvable], this.conf["evolvables_mit"][evolvable]["lower_bound"])
+			}
+			if (this.conf["evolvables_mit"][evolvable]["upper_bound"] !== undefined){
+				this[evolvable] = Math.min(this[evolvable], this.conf["evolvables_mit"][evolvable]["upper_bound"])
+			}
+		}
 	}
 
 	/**
@@ -252,7 +289,6 @@ class Mitochondrion extends SubCell {
 
 	/**
      * Reimplements CPM.Cell implementation to ask Host cell
-	 * all evolvables of Mitochondria are controlled by host
      * returns conf value if host not extant
      * TODO add all parameters at birth to mito so they stay with extant subcells after host death
 	*/
@@ -454,6 +490,10 @@ class Mitochondrion extends SubCell {
 		}
 		mito["sum dna"] = sumdna.slice(0,10)
 		mito["unmut"] = this.unmutated/this.DNA.length
+		for (const evolvable in this.conf.evolvables_mit){
+			let str = "evolvables_" + evolvable
+			mito[str] = this[evolvable]
+		}
 		return mito
 	}
     
@@ -477,7 +517,7 @@ class Mitochondrion extends SubCell {
 		}
 		let deathstr = ""
 		for (let key in dct){
-			if (key == "evolvables"){
+			if (key == "evolvables" || key=="evolvables_mit"){
 				for (let key2 in dct[key]){
 					deathstr += dct[key][key2]+";"
 				}
