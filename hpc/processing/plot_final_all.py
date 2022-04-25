@@ -19,7 +19,7 @@ parser.add_argument("-c", "--competition", help = "Specify that dual values are 
 parser.add_argument("-p", dest='params', help="parameters in folder names to use", nargs='+')
 parser.add_argument("-v", "--verbose", help="print more information", action="store_true")
 parser.add_argument("--clean", help="cleans the folder before replotting", action="store_true")
-parser.add_argument("-g", "--generation", help="generation for to plot. Default is last generation", default=-1)
+parser.add_argument("-g", "--generation", type=int, help="generation for to plot. Default is last generation", default=-1)
 
 
 # Read arguments from command line
@@ -41,24 +41,30 @@ try:
     if (not "growth_rate" in params) and ("growth_rate" in host.columns):
         host = host.drop(["growth_rate"], axis=1)
 
-    mit = pd.read_csv(folder+'/mit.csv', low_memory=False, sep=';')
-    mit = mit.drop(['products', 'bad products', 'sum dna', 'new DNA ids','type', 'host'], axis=1)
-    mit = mit.drop([i for i in mit.columns if i[:7]=='Unnamed'], axis=1)
-    if (not "growth_rate" in params) and ("growth_rate" in mit.columns):
-        mit = mit.drop(["growth_rate"], axis=1)
+    # mit = pd.read_csv(folder+'/mit.csv', low_memory=False, sep=';')
+    # mit = mit.drop(['products', 'bad products', 'sum dna', 'new DNA ids','type', 'host'], axis=1)
+    # mit = mit.drop([i for i in mit.columns if i[:7]=='Unnamed'], axis=1)
+    # if (not "growth_rate" in params) and ("growth_rate" in mit.columns):
+    #     mit = mit.drop(["growth_rate"], axis=1)
 except:
     print("***\nData must have been aggregated before use\n***")
     sys.exit()
 
 host = host.astype({'time':float})
-mit = mit.astype({'time':float})
+# mit = mit.astype({'time':float})
 if args.generation!=-1:
     target_gen = args.generation
 else:
     target_gen = max(host['time'])
 
+if args.verbose:
+    print("target generation is", target_gen)
+
 host = host[host['time']==target_gen]
-mit = mit[mit['time']==target_gen]
+# mit = mit[mit['time']==target_gen]
+
+# if args.verbose:
+#     print(host, mit)
 
 try:
     mit['degradation']=mit['degradation'].replace({'01':'0.1', '005':'0.05', '001':'0.01', '0025':'0.025', '0075':'0.075'})
@@ -76,15 +82,15 @@ try:
 except:
     pass
 
-host = host.replace({'undefined':"NaN"})
+host = host.replace({'undefined':"NaN", "True":1,"False":0})
 host = host.astype(float)
-mit = mit.replace({'undefined':"NaN"})
-mit = mit.astype(float)
+# mit = mit.replace({'undefined':"NaN", "True":1,"False":0})
+# mit = mit.astype(float)
 
 
-if args.verbose:
-    print(host.columns)
-    print(mit.columns)
+# if args.verbose:
+#     print(host.columns)
+#     print(mit.columns)
 
 if not os.path.isdir(folder+'/processing/'):
     print('The directory is not present. Creating a new one..')
@@ -103,44 +109,46 @@ usual_colors = ['tab:blue', 'tab:orange', 'tab:green','tab:purple','tab:red',
 
 
 evolvables = [i for i in host.columns if i[:10]=='evolvables']
-for ev in evolvables:
-    host = host.rename(columns = {ev : ev[11:]})
+# for ev in evolvables:
+#     host = host.rename(columns = {ev : ev[11:]})
 
 host = host.rename(columns = {'vol': 'vol_host'})
-mit = mit.rename(columns = {'vol': 'vol_mit'})
+# mit = mit.rename(columns = {'vol': 'vol_mit'})
 
 non_plottable = [i for i in params]
 non_plottable += ['time', 'id', 'V', 'seed', 'time of birth',
-    'fission events', 'fusion events', 'repliosomes', 'parent']
+    'fission events', 'fusion events', 'repliosomes', 'parent', 'genes']
 
-for df in [host,mit]:
+# for df in [host,mit]:
+for df in [host]:
     if len(params)==1:
         for k in params:
             if args.verbose:
                 print(k)
             for val in df.columns:
+                if args.verbose:
+                    print(val)
                 if val not in non_plottable:
-                    tmp=df
                     if args.verbose:
                         print(val)
                     
                     fig, ax = plt.subplots(1, 1, figsize=(15,10))
                     try:
-                        sns.violinplot(x=k, y=val, inner=None, data=tmp, ax=ax,
+                        sns.violinplot(x=k, y=val, inner=None, data=df, ax=ax,
                             color='.9')
-                        sns.stripplot(x=k, y=val, hue="seed", data=tmp, ax=ax,
-                            linewidth=1)
+                        sns.stripplot(x=k, y=val, hue="seed", data=df, ax=ax,
+                            )
                         ax.set_title(str(folder)+'\n'+val+" at time "+str(target_gen))
                         ax.set_xlabel(k)
-                        if val=='fusion_rate':
+                        if val=='evolvables_fusion_rate':
                             ax.set_ylim(-1e-3, 1e-3)
-                        elif val=='host_division_volume':
+                        elif val=='evolvables_host_division_volume':
                             ax.set_ylim(0,5000)
-                        elif val=='fission_rate':
+                        elif val=='evolvables_fission_rate':
                             ax.set_ylim(-1e-5,5.5e-5)
-                        elif val=='rep':
+                        elif val=='evolvables_rep':
                             ax.set_ylim(5,35)
-                        elif val=='HOST_V_PER_OXPHOS':
+                        elif val=='evolvables_HOST_V_PER_OXPHOS':
                             ax.set_ylim(-1e-5,1)
                         else:
                             ax.set_ylim(min(df[val]), max(df[val]))
@@ -156,37 +164,40 @@ for df in [host,mit]:
             print(k)
             for unique_value in df[k].unique():
                 tmp = df[df[k]==unique_value]
-
                 for other_param in params:
-                    if k!=other_param:
+                    if args.verbose:
+                        print(k, other_param)
+                    if k!=other_param and k!='seed':
                         for val in df.columns:
-                            fig, ax = plt.subplots(1, 1, figsize=(15,10))
-                            try:
-                                sns.violinplot(x=other_param, y=val, inner=None, data=tmp, ax=ax,
-                                    color='.2')
-                                sns.stripplot(x=other_param, y=val, hue="seed", data=tmp, ax=ax,
-                                    linewidth=1)
-                                
-                                ax.set_title(str(folder)+'\n'+val+" at time "+str(target_gen)+" "+str(k)+" "+str(unique_value))
-                                ax.set_xlabel(other_param)
-                                if ev=='fusion_rate':
-                                    ax.set_ylim(-1e-3, 1e-3)
-                                elif ev=='host_division_volume':
-                                    ax.set_ylim(0,5000)
-                                elif ev=='fission_rate':
-                                    ax.set_ylim(-1e-5,5.5e-5)
-                                elif ev=='rep':
-                                    ax.set_ylim(5,35)
-                                elif ev=='HOST_V_PER_OXPHOS':
-                                    ax.set_ylim(-1e-5,1)
-                                else:
-                                    ax.set_ylim(min(df[val]), max(df[val]))
-
-                                fig.tight_layout()
-                                fig.savefig(folder+'/processing/final_fusion/'+val+'_'+k+"_"+str(unique_value)+'_time_'+str(target_gen)+'.png')
-                            except:
-                                pass
-                            plt.close(fig)
+                            if val not in non_plottable:
+                                if args.verbose:
+                                    print(k, other_param, val)
+                                fig, ax = plt.subplots(1, 1, figsize=(15,10))
+                                try:
+                                    sns.violinplot(x=other_param, y=val, inner=None, data=tmp, ax=ax,
+                                        color='.9')
+                                    sns.stripplot(x=other_param, y=val, hue="seed", data=tmp, ax=ax,
+                                        )
+                                    ax.set_title(str(folder)+'\n'+val+" at time "+str(target_gen)+" "+str(k)+" "+str(unique_value))
+                                    ax.set_xlabel(other_param)
+                                    if val=='evolvables_fusion_rate':
+                                        ax.set_ylim(-1e-3, 1e-3)
+                                    elif val=='evolvables_host_division_volume':
+                                        ax.set_ylim(0,5000)
+                                    elif val=='evolvables_fission_rate':
+                                        ax.set_ylim(-1e-5,5.5e-5)
+                                    elif val=='evolvables_rep':
+                                        ax.set_ylim(5,35)
+                                    elif val=='evolvables_HOST_V_PER_OXPHOS':
+                                        ax.set_ylim(-1e-5,1)
+                                    else:
+                                        ax.set_ylim(min(df[val]), max(df[val]))
+                                    fig.tight_layout()
+                                    fig.savefig(folder+'/processing/end_values/'+val+'_'+k+"_"+str(unique_value)+'_'+other_param+'_'+'_time_'+str(target_gen)+'.png')
+                                except:
+                                    print("Failed for ",k, unique_value, other_param, val)
+                                    pass
+                                plt.close(fig)
 
 
                     

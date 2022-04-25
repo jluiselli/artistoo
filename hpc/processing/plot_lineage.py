@@ -38,6 +38,10 @@ for subfolder in subfolders:
                 continue
             hosts = hosts.drop(['time of birth','good','bads','dna','type', 'fusion events', 'fission events'], axis=1)
             hosts = hosts.drop([i for i in hosts.columns if i[:7]=='Unnamed'], axis=1)
+            try:
+                hosts = hosts.replace({'undefined':"NaN"})
+            except:
+                pass
             hosts = hosts.astype(float)
             
             mit = mit.drop(['products', 'bad products', 'sum dna', 'new DNA ids', 'type', 'time of birth'], axis=1)
@@ -52,29 +56,51 @@ for subfolder in subfolders:
     
 
         lineage = df[df['time']==max(df['time'])]
-        lastgener = df[df['time']==max(df['time'])]
-        host_ids = list(lastgener['host_id'].unique())
-        parents_ids = list(lastgener['parent'].unique())
+        host_ids = list(lineage['host_id'].unique())
+        parents_ids = list(lineage['parent'].unique())
         if df.empty:
             continue
 
-        for t in reversed(df['time'].unique()):
-            tmp = df[df['time']==t]
-            for p_id in parents_ids:
-                parent_df = tmp[tmp['host_id']==p_id]
-                if not parent_df.empty:
-                    lineage = pd.concat([lineage, parent_df])
-                    parents_ids.remove(p_id)
-                    host_ids += [p_id]
-                    parents_ids += list(parent_df['parent'].unique())
-                    # AJOUTER LE PARENT A SUIVRE
-            for h_id in host_ids:
-                host_df = tmp[tmp['host_id']==h_id]
-                if host_df.empty:
-                    host_ids.remove(h_id)
-            if len(host_ids)==0 or len(parents_ids) == 0:
-                print("NO MORE CELLS TO TRACK ! ERROR !")
-                raise ERROR
+        try:
+            for t in reversed(df['time'].unique()):
+                tmp = df[df['time']==t]
+                for p_id in parents_ids:
+                    parent_df = tmp[tmp['host_id']==p_id]
+                    if not parent_df.empty:
+                        lineage = pd.concat([lineage, parent_df])
+                        parents_ids.remove(p_id)
+                        if not p_id in host_ids:
+                            host_ids += [p_id]
+                        to_remove = tmp[tmp['parent']==p_id]
+                        for removed_id in to_remove['host_id'].unique():
+                            try:
+                                host_ids.remove(removed_id) # We found the parent
+                            except: #cell not previously followed
+                                pass
+                        if len(parent_df['parent'].unique())!=1:
+                            print("ERROR")
+                            print(parent_df)
+                            print(parent_df['parent'])
+                            print(parent_df['parent'].unique())
+                            print(len(parent_df['parent'].unique()))
+                            raise ERROR
+                        parents_ids += list(parent_df['parent'].unique())
+                        # AJOUTER LE PARENT A SUIVRE
+                for h_id in host_ids:
+                    host_df = tmp[tmp['host_id']==h_id]
+                    # if host_df.empty:
+                    #     host_ids.remove(h_id)
+                    lineage = pd.concat([lineage, host_df])
+                    # print("lineage shape", lineage.shape, "time", min(lineage["time"]))
+                if len(host_ids)==0:
+                    print(lineage)
+                    print(lineage[lineage['parent']=='-1'])
+                    print("NO MORE CELLS TO TRACK ! ERROR !")
+                    print("Stopped back tracking at "+str(min(lineage['time'])))
+                    raise ERROR
+        
+        except:
+            continue
         
         print("sucessfully tracked ancestor !")
         lineage.to_csv(folder+'/'+subfolder+'/lineage.csv', sep=';')
@@ -82,6 +108,7 @@ for subfolder in subfolders:
     #Now plot
     lineage = lineage.drop([i for i in lineage.columns if i[:7]=='Unnamed'], axis=1)
     lineage = lineage.drop(['parent','host_id','mit_id'], axis=1)
+
     for col in lineage.columns:
         if col != 'time':
             fig, ax = plt.subplots(1, 1, figsize=(15,10))
@@ -108,22 +135,25 @@ for subfolder in subfolders:
             plt.close(fig)
 
             fig, ax = plt.subplots(1, 1, figsize=(15,10))
-            lineage.plot.scatter(x='time', y=col, alpha=0.9, s=10, ax=ax)
-            plt.plot(pd.DataFrame(lineage['time'].unique()).rolling(50).mean(),
-                pd.DataFrame(Mean).rolling(50).mean(),
-                color='tab:orange', linewidth=3)
-
             try:
-                ax.set_ylim(0.99*min(lineage[col]), 1.01*max(lineage[col]))
+                lineage.plot.scatter(x='time', y=col, alpha=0.9, s=10, ax=ax)
+                plt.plot(pd.DataFrame(lineage['time'].unique()).rolling(50).mean(),
+                    pd.DataFrame(Mean).rolling(50).mean(),
+                    color='tab:orange', linewidth=3)
+
+                try:
+                    ax.set_ylim(0.99*min(lineage[col]), 1.01*max(lineage[col]))
+                except:
+                    pass
+                ax.set_ylabel(col)
+                ax.set_yscale('log')
+                ax.set_xlabel('time')
+                ax.set_title(col+" over time for the lineage")
+
+                fig.tight_layout()
+                fig.savefig(folder+'/processing/'+subfolder+'/'+col+'_log_lineage.png')
             except:
                 pass
-            ax.set_ylabel(col)
-            ax.set_yscale('log')
-            ax.set_xlabel('time')
-            ax.set_title(col+" over time for the lineage")
-
-            fig.tight_layout()
-            fig.savefig(folder+'/processing/'+subfolder+'/'+col+'_log_lineage.png')
             plt.close(fig)
     
     
