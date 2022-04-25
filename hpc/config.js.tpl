@@ -4,17 +4,16 @@ let ColorMap = require("../../../examples/node/colormap-cjs.js")
 "use strict"
 
 let config = {
-
-    // Grid settings
-    ndim : 2,
-    field_size : [450,450],
-    
-    // CPM parameters and configuration
-    conf : {
-        // Basic CPM parameters
-        torus : [true,true],                // Should the grid have linked borders?
-        seed : 43874,                            // Seed for random number generation.
-        T : 2,                                // CPM temperature
+	// Grid settings
+	ndim : 2,
+	field_size : [450,450],
+	
+	// CPM parameters and configuration
+	conf : {
+		// Basic CPM parameters
+		torus : [true,true],				// Should the grid have linked borders?
+		seed : 8547985743,							// Seed for random number generation.
+		T : 2,								// CPM temperature
         
     
         CELLS : ["empty", CPM.HostCell, CPM.Mitochondrion], 
@@ -74,7 +73,7 @@ let config = {
         VOLCHANGE_THRESHOLD : 10,
         SELECTIVE_FUSION: false,
 		MITO_PARTITION : 0.5,
-        MITO_DIV_VOLUME : 75,
+        MITO_DIV_VOLUME : -1,
 
         // VolumeConstraint parameters
         LAMBDA_V : [0, 1, 1],                // VolumeConstraint importance per cellkind
@@ -208,40 +207,17 @@ function postMCSListener(){
                     let parstr = ""
                     let daughterstr = ""
                     for (let key in cell.stateDct()){
-                        if (key == "evolvables"){
-                            for (let key2 in cell.stateDct()[key]){
-                                parstr += "parent_evolvables_" + key2 + ";"
-                                daughterstr += "daughter_evolvables_" + key2 + ";"
-                            }
-                        }
-                        else {
-                            parstr += "parent_" + key + ";"
-                            daughterstr += "daughter_" + key + ";"
-                        }
-                        
+                        parstr += "parent_" + key + ";"
+                        daughterstr += "daughter_" + key + ";"                        
                     }
                     fs.appendFileSync("divisions.txt", parstr+daughterstr+'\n')
                 }
                 let divstr = ""
                 for (let key in cell.stateDct()){
-                    if (key == "evolvables"){
-                        for (let key2 in cell.stateDct()[key]){
-                            divstr += cell.stateDct()[key][key2]+";"
-                        }
-                    }
-                    else {
-                        divstr += cell.stateDct()[key]+";"
-                    }
+                    divstr += cell.stateDct()[key]+";"
                 }
                 for (let key in this.C.cells[nid].stateDct()){
-                    if (key == "evolvables"){
-                        for (let key2 in this.C.cells[nid].stateDct()[key]){
-                            divstr += this.C.cells[nid].stateDct()[key][key2]+";"
-                        }
-                    }
-                    else {
-                        divstr += this.C.cells[nid].stateDct()[key]+";"
-                    }
+                    divstr += this.C.cells[nid].stateDct()[key]+";"
                 }
                 fs.appendFileSync("divisions.txt", divstr+'\n')
             }
@@ -462,14 +438,7 @@ function logStats(){
             let i = 0
             for (let key in jsonobj){
                 for (let key2 in jsonobj[key]){
-                        if (key2 == "evolvables"){
-                            for (let key3 in jsonobj[key][key2]){
-                                hoststr += "evolvables_"+key3+";"
-                            }
-                        }
-                        else {
-                            hoststr += key2+";"
-                        }
+                    hoststr += key2+";"
                 }
                 break
             }
@@ -484,14 +453,7 @@ function logStats(){
         }
         for (let key in jsonobj){
             for (let key2 in jsonobj[key]){
-                if (key2 == "evolvables"){
-                    for (let key3 in jsonobj[key][key2]){
-                        hoststr += jsonobj[key][key2][key3]+";"
-                    }
-                }
-                else {
-                    hoststr += jsonobj[key][key2]+";"
-                }
+                hoststr += jsonobj[key][key2]+";"
             }
             hoststr += '\n'
         }
