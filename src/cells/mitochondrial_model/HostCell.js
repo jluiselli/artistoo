@@ -55,6 +55,10 @@ class HostCell extends SuperCell {
 
 		/** initialize DNA */
 		this.DNA = new nDNA(conf, C, String(this.id)) 
+
+		/** initialize count of fusion and fission */
+		this.fission_events = 0
+		this.fusion_events = 0
 	}
 
 	/**
@@ -89,6 +93,8 @@ class HostCell extends SuperCell {
 				this[evolvable][this.kind-1] = Math.min(this[evolvable][this.kind-1], this.conf["evolvables"][evolvable]["upper_bound"])
 			}
 		}
+		this.fission_events = 0
+		this.fusion_events = 0
 	}
 
 	/**
