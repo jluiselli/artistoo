@@ -16,8 +16,8 @@ parser.add_argument("-c", "--competition", help = "Specify that dual values are 
 parser.add_argument("-p", dest='params', help="parameters in folder names to use", nargs='+')
 parser.add_argument("-v", "--verbose", help="print more information", action="store_true")
 parser.add_argument("--clean", help="cleans the folder before replotting", action="store_true")
-parser.add_argument("-g", "--max_generation", help="end generation for the temporal plots. Default is last generation", default=-1)
-parser.add_argument("-f", "--fraction", help="fraction of dataframe you want to plot (can be used to make plots quicker)", default=1)
+parser.add_argument("-g", "--max_generation", type=int, help="end generation for the temporal plots. Default is last generation", default=-1)
+parser.add_argument("-f", "--fraction", help="fraction of dataframe you want to plot (can be used to make plots quicker)", default=1, type=float)
 
 
 # Read arguments from command line
@@ -33,8 +33,9 @@ try:
     if args.verbose:
         print(hosts.columns)
     try:
-        hosts = hosts.drop(['time of birth','good','bads','dna','type'], axis=1)
-        hosts = hosts.drop(['evolvables', 'subcells'], axis=1)
+        hosts = hosts.drop(['time of birth','good','bads','dna','type','total_vol'], axis=1)
+        hosts = hosts.drop([i for i in hosts.columns if i[:7]=='Unnamed'], axis=1)
+        hosts = hosts.drop(['genes'], axis=1)
     except:
         pass
     if args.competition:
@@ -45,12 +46,18 @@ try:
             hosts[new_name1] = [i[0] for i in hosts[ev]]
             hosts[new_name2] = [i[1] for i in hosts[ev]]
             hosts = hosts.drop([ev], axis=1)
-
-    hosts = hosts.replace({'undefined':'NaN'})
-    hosts = hosts.astype(float)
+    if args.verbose:
+        print('now sampling the df')
     hosts = hosts.sample(frac=args.fraction)
+
+    hosts = hosts.replace({'undefined':'NaN',"True":1,"False":0})
+    if args.verbose:
+        print('all set to convert to float')
+    hosts = hosts.astype(float)
+    
 except:
     print("Data must have been aggregated with aggregate.py before plotting")
+    sys.exit()
 
 
 if not os.path.isdir(folder+'/processing/'):
@@ -77,82 +84,97 @@ try:
     hosts['growth_rate']=hosts['growth_rate'].replace({15:1.5, 5:0.5})
 except:
     pass
+try:
+    hosts=hosts[hosts['genes']!=100]
+except:
+    pass
 
 if args.max_generation != -1:
     hosts = hosts[hosts['time']<args.max_generation]
 
-interest_params = ['total_vol', 'vol', 'n mito','total_oxphos']
+interest_params = ['vol', 'n mito','total_oxphos']
+# interest_params = ['total_vol', 'vol', 'n mito']
 if args.competition:
     interest_params += [i for i in hosts.columns if (i[:10]=='evolvables' and i[-2:]=='_1')]
     interest_params += [i for i in hosts.columns if (i[:10]=='evolvables' and i[-2:]=='_2')]
 else:
     interest_params += [i for i in hosts.columns if i[:10]=='evolvables']
 
+# interest_params = ["evolvables_fusion_rate"] #Tmp quick plot
 
-if params[-1]=='seed':
-    unique_plots = True
-    params = params[:-1]
-else:
-    unique_plots = False
+hosts = hosts.astype({'seed':str})
+minimums, maximums = {}, {}
+for ev in interest_params:
+    minimums[ev] = min(hosts[ev])
+    maximums[ev] = max(hosts[ev])
 
-if unique_plots:
+# if params[-1]=='seed':
+#     unique_plots = True
+#     params = params[:-1]
+# else:
+#     unique_plots = False
+
+# if unique_plots:
+if args.verbose:
+    print("doing all unique plots")
+comb = []
+for k in params:
+    tmp_list = []
+    for val in hosts[k].unique():
+        tmp_list+=[val]
+    comb += [tmp_list]
+combinations = list(itertools.product(*comb))
+for c in combinations:
     if args.verbose:
-        print("doing all unique plots")
-    comb = []
+        print("unique plot",c)
+    tmp = hosts
+    i=0
     for k in params:
-        tmp_list = []
-        for val in hosts[k].unique():
-            tmp_list+=[val]
-        comb += [tmp_list]
-    combinations = list(itertools.product(*comb))
-    for c in combinations:
+        tmp = tmp[tmp[k]==c[i]]
+        i+=1
+    if tmp.empty:
         if args.verbose:
-            print("unique plot",c)
-        tmp = hosts
-        i=0
-        for k in params:
-            tmp = tmp[tmp[k]==c[i]]
-            i+=1
-        if tmp.empty:
-            continue
-        for ev in interest_params:
-            if args.verbose:
-                print(ev)
+            print("this combination is empty")
+        continue
+    for ev in interest_params:
+        if args.verbose:
+            print(ev)
+        fig, ax = plt.subplots(1, 1, figsize=(15,10))
+        sns.scatterplot(x='time', y=ev, data=tmp, ax=ax, hue="seed")
+        # , alpha=alpha)            
+        ax.set_ylim(minimums[ev], maximums[ev])
+        ax.set_ylabel(ev)
+        ax.set_xlabel('time')
+        ax.legend()
+        ax.set_title(ev+" over time "+str(c))
+        fig.tight_layout()
+        fig.savefig(folder+'/processing/hosts/'+ev+'_time_'+str(c)+'.png')
+        plt.close(fig)
 
-            tmp = tmp.astype({'seed':str})
-            fig, ax = plt.subplots(1, 1, figsize=(15,10))
-            sns.scatterplot(x='time', y=ev, data=tmp, ax=ax, hue="seed", s=2, alpha=alpha)            
-            ax.set_ylim(min(hosts[ev]), max(hosts[ev]))
-            ax.set_ylabel(ev)
-            ax.set_xlabel('time')
-            ax.legend()
-            ax.set_title(ev+" over time "+str(c))
-            fig.tight_layout()
-            fig.savefig(folder+'/processing/hosts/'+ev+'_time_'+str(c)+'.png',dpi=600)
-            plt.close(fig)
-
-    if args.verbose:
-        print("finished unique plots. On to merged seeds")
+if args.verbose:
+    print("finished unique plots. On to merged seeds")
+for k in params:
+    hosts = hosts.astype({k:str})
           
 for k in params: # different values given at the beginning of the simulation
     if args.verbose:
         print(k)
     
     for ev in interest_params: # Which thing over time we want to plot
-        fig, ax = plt.subplots(1, 1, figsize=(15,10))
-        sns.scatterplot(x='time', y=ev, hue=k, alpha=alpha,s=2, ax=ax, data=hosts)
+        # fig, ax = plt.subplots(1, 1, figsize=(15,10))
+        # sns.scatterplot(x='time', y=ev, hue=k, alpha=alpha, s=5, ax=ax, data=hosts)
 
-        try:
-            ax.set_ylim(min(hosts[ev]), max(hosts[ev]))
-        except:
-            pass
-        ax.set_ylabel(ev)
-        ax.set_xlabel('time')
-        ax.legend()
-        ax.set_title(ev+" over time for different "+k)
-        fig.tight_layout()
-        fig.savefig(folder+'/processing/hosts/'+ev+'_time_'+k+'.png',dpi=600)
-        plt.close(fig)
+        # try:
+        #     ax.set_ylim(min(hosts[ev]), max(hosts[ev]))
+        # except:
+        #     pass
+        # ax.set_ylabel(ev)
+        # ax.set_xlabel('time')
+        # ax.legend()
+        # ax.set_title(ev+" over time for different "+k)
+        # fig.tight_layout()
+        # fig.savefig(folder+'/processing/hosts/'+ev+'_time_'+k+'.png',dpi=600)
+        # plt.close(fig)
 
         fig, ax = plt.subplots(2, 1, figsize=(15,15))
         for unique_value in hosts[k].unique():
@@ -162,11 +184,12 @@ for k in params: # different values given at the beginning of the simulation
             lab = str(k)+' '+str(unique_value)
             ax.scatter(tmp['time'].unique(), Z, label=lab, alpha=.6)
         ax.set_ylabel(ev)
+        ax.set_ylim(minimums[ev], maximums[ev])
         ax.set_xlabel('time')
         ax.set_title("Mean "+ev+" over time for different "+k)
         ax.legend()
         fig.tight_layout()
-        fig.savefig(folder+'/processing/hosts/'+ev+'_time_'+k+'_summarize.png',dpi=600)
+        fig.savefig(folder+'/processing/hosts/'+ev+'_time_'+k+'_summarize.png')
         plt.close(fig)
         
         if args.verbose:
@@ -178,17 +201,17 @@ for k in params: # different values given at the beginning of the simulation
                 continue
             for other_param in params:
                 if k!=other_param:
-                    fig, ax = plt.subplots(1, 1, figsize=(15,10))
-                    sns.scatterplot(x='time', y=ev, hue=other_param, alpha=alpha,s=2, ax=ax, data=tmp)
+                    # fig, ax = plt.subplots(1, 1, figsize=(15,10))
+                    # sns.scatterplot(x='time', y=ev, hue=other_param, alpha=alpha,s=2, ax=ax, data=tmp)
 
-                    ax.set_ylim(min(hosts[ev]), max(hosts[ev]))
-                    ax.set_ylabel(ev)
-                    ax.set_xlabel('time')
-                    ax.legend()
-                    ax.set_title(ev+" over time for "+k+" "+str(unique_value))
-                    fig.tight_layout()
-                    fig.savefig(folder+'/processing/hosts/'+ev+'_time_'+other_param+"_"+str(unique_value)+'.png',dpi=600)
-                    plt.close(fig)
+                    # ax.set_ylim(min(hosts[ev]), max(hosts[ev]))
+                    # ax.set_ylabel(ev)
+                    # ax.set_xlabel('time')
+                    # ax.legend()
+                    # ax.set_title(ev+" over time for "+k+" "+str(unique_value)+" different "+other_param)
+                    # fig.tight_layout()
+                    # fig.savefig(folder+'/processing/hosts/'+ev+'_time_'+other_param+"_"+str(unique_value)+'.png',dpi=600)
+                    # plt.close(fig)
                 
                     fig, ax = plt.subplots(2, 1, figsize=(15,15))
                     for value in hosts[other_param].unique():
@@ -199,10 +222,10 @@ for k in params: # different values given at the beginning of the simulation
                         lab = str(other_param)+' '+str(value)
                         ax.scatter(tmp2['time'].unique(), Z, label=lab, alpha=.6)
                     ax.legend()
-                    ax.set_ylim(0.9*min(Z),1.1*max(Z))
+                    ax.set_ylim(minimums[ev], maximums[ev])
                     ax.set_ylabel(ev)
                     ax.set_xlabel('time')
                     ax.set_title("Mean "+ev+" over time for different "+other_param+"\n"+k+" is "+str(unique_value))
                     fig.tight_layout()
-                    fig.savefig(folder+'/processing/hosts/'+ev+'_time_'+k+'-'+str(unique_value)+'_'+other_param+'_summarize.png',dpi=600)
+                    fig.savefig(folder+'/processing/hosts/'+ev+'_time_'+k+'-'+str(unique_value)+'_'+other_param+'_summarize.png')
                     plt.close(fig)

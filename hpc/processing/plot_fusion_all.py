@@ -16,7 +16,7 @@ parser.add_argument("-c", "--competition", help = "Specify that dual values are 
 parser.add_argument("-p", dest='params', help="parameters in folder names to use", nargs='+')
 parser.add_argument("-v", "--verbose", help="print more information", action="store_true")
 parser.add_argument("--clean", help="cleans the folder before replotting", action="store_true")
-parser.add_argument("-g", "--max_generation", help="end generation for the temporal plots. Default is last generation", default=-1)
+parser.add_argument("-g", "--max_generation", type=int, help="end generation for the temporal plots. Default is last generation", default=-1)
 
 
 # Read arguments from command line
@@ -45,12 +45,6 @@ else:
         hosts = hosts.drop(['evolvables', 'subcells'], axis=1)
     except:
         pass
-    hosts['time']=hosts['time'].astype(float)
-    if args.max_generation != -1:
-        target_gen = max(hosts['time'])
-    else:
-        target_gen = args.max_generation
-    hosts = hosts[hosts['time']<target_gen]
     if args.verbose:
         print(hosts.columns)
 
@@ -65,10 +59,6 @@ else:
     mit = mit.rename(columns = {'id':'mit_id','host':'host_id','V':'V_mit','vol':'vol_mit'})
     hosts = hosts.rename(columns = {'id':'host_id','V':'V_host','vol':'vol_host'})
 
-    
-    mit['time']=mit['time'].astype(float)
-    mit = mit[mit['time']<target_gen]
-
     df = hosts.merge(mit, on=None, how='right')
     df = df.replace({'undefined':"NaN"})
     if args.verbose:
@@ -79,6 +69,12 @@ else:
 #     exit
 
 
+df['time']=df['time'].astype(float)
+if args.max_generation == -1:
+    target_gen = max(df['time'])
+else:
+    target_gen = args.max_generation
+df = df[df['time']<target_gen]
 
 try:
     df['degradation']=df['degradation'].replace({'01':'0.1', '005':'0.05', '001':'0.01', '0025':'0.025', '0075':'0.075'})
@@ -90,7 +86,11 @@ try:
 except:
     pass
 
-df = df.replace({'undefined':"NaN"})
+try:
+    df = df.replace({'undefined':"NaN"})
+    df = df.replace({'True':1,'False':0})
+except:
+    pass
 df = df.astype(float)
 
 if not os.path.isdir(folder+'/processing/'):
@@ -109,29 +109,33 @@ usual_colors = ['tab:blue', 'tab:orange', 'tab:green','tab:purple','tab:red',
 'tab:pink','tab:brown'] 
 
 
-print(df.columns)
-evolvables = [i for i in df.columns if i[:10]=='evolvables']
-print(evolvables)
-for ev in evolvables:
-    df = df.rename(columns = {ev : ev[11:]})
-print(df.columns)
-df['growth_rate']=df['growth_rate'].replace({15:1.5, 5:0.5})
-df['time'] = df['time'].astype(float)
-df['fusion_rate'] = df['fusion_rate'].astype(float)
-df = df.astype(float)
+# evolvables = [i for i in df.columns if i[:10]=='evolvables']
+
+# for ev in evolvables:
+#     df = df.rename(columns = {ev : ev[11:]})
+
+df = df.rename(columns = {'evolvables_fusion_rate':'fusion_rate'})
+
+try:
+    df['growth_rate']=df['growth_rate'].replace({15:1.5, 5:0.5})
+except:
+    pass
+
+df = df[df['time']>=max(df['time'])-1000] #Plotting the 1000 last generations
 
 for k in params:
     non_plottable = [i for i in params]
     non_plottable += ['time', 'fusion_rate', 'host_id', 'mit_id', 'V_mit', 'V_host', 'idx1', 'idx2', 'seed',
-    'fission events', 'fusion events', 'repliosomes', 'parent', 'growth_rate', 'damage_rate']
+    'fission events', 'fusion events', 'repliosomes', 'parent', 'growth_rate', 'damage_rate', 'pmut', 'partition']
+    df = df.astype({k:str})
     if args.verbose:
         print(k)
     for val in df.columns:
         if args.verbose:
-            print(val)
+            print(k, val)
         if val not in non_plottable:
             df = df.astype({val:float})
-            df = df.astype({k:str})
+
             fig, ax = plt.subplots(1, 1, figsize=(15,10))
             sns.scatterplot(x=val, y='fusion_rate', hue=k,
                 data=df, alpha = 0.1, s=20, ax=ax)

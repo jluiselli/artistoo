@@ -17,7 +17,7 @@ parser.add_argument("-c", "--competition", help = "Specify that dual values are 
 parser.add_argument("-p", dest='params', help="parameters in folder names to use", nargs='+')
 parser.add_argument("-v", "--verbose", help="print more information", action="store_true")
 parser.add_argument("--clean", help="cleans the folder before replotting", action="store_true")
-parser.add_argument("-g", "--max_generation", help="end generation for the temporal plots. Default is last generation", default=-1)
+parser.add_argument("-g", "--max_generation", type=int, help="end generation for the temporal plots. Default is last generation", default=-1)
 
 # Read arguments from command line
 args = parser.parse_args()
@@ -68,6 +68,8 @@ if params[-1]=='seed':
 for celltype in ['host','mito']:
     if args.verbose:
         print(celltype)
+        print(df_deaths)
+        print(df_divisions)
     deaths = df_deaths[df_deaths['type']==celltype]
     divisions = df_divisions
     if unique_plots:
@@ -120,9 +122,8 @@ for celltype in ['host','mito']:
             if args.verbose:
                 print(k)
             fig, ax = plt.subplots(1, 1, figsize=(15,10))
-            for x in deaths[k].unique():
-                ax.hist([deaths[deaths[k]==x]["time"]], label=x,
-                alpha=0.5)
+            ax.hist([deaths[deaths[k]==x]["time"] for x in deaths[k].unique()],
+                label=deaths[k].unique())
             ax.set_ylabel('# deaths')
             ax.set_xlabel('time')
             ax.legend(title=k)
@@ -132,9 +133,8 @@ for celltype in ['host','mito']:
             plt.close(fig)
 
             fig, ax = plt.subplots(1, 1, figsize=(15,10))
-            for x in divisions[k].unique():
-                ax.hist([divisions[divisions[k]==x]["time"]], label=x,
-                alpha=0.5)
+            ax.hist([divisions[divisions[k]==x]["time"] for x in divisions[k].unique()],
+                label=divisions[k].unique())
             ax.set_ylabel('# divisions')
             ax.set_xlabel('time')
             ax.legend(title=k)
@@ -152,9 +152,8 @@ for celltype in ['host','mito']:
                 for other_param in params:
                     if k!=other_param:
                         fig, ax = plt.subplots(1, 1, figsize=(15,10))
-                        for x in deaths[other_param].unique():
-                            ax.hist([deaths[deaths[other_param]==x]["time"]], label=x,
-                            alpha=0.5)
+                        ax.hist([tmp_deaths[tmp_deaths[other_param]==x]["time"] for x in tmp_deaths[other_param].unique()],
+                            label=tmp_deaths[other_param].unique())
                         ax.set_ylabel('#deaths')
                         ax.set_xlabel('time')
                         ax.legend(title=other_param)
@@ -164,13 +163,12 @@ for celltype in ['host','mito']:
                         plt.close(fig)
 
                         fig, ax = plt.subplots(1, 1, figsize=(15,10))
-                        for x in divisions[other_param].unique():
-                            ax.hist([divisions[divisions[other_param]==x]["time"]], label=x,
-                            alpha=0.5)
-                        ax.set_ylabel('#deaths')
+                        ax.hist([tmp_divisions[tmp_divisions[other_param]==x]["time"] for x in tmp_divisions[other_param].unique()],
+                            label=tmp_divisions[other_param].unique())
+                        ax.set_ylabel('#births')
                         ax.set_xlabel('time')
                         ax.legend(title=other_param)
-                        ax.set_title("deaths over time for "+k+" "+str(unique_value))
+                        ax.set_title("divisions over time for "+k+" "+str(unique_value))
                         fig.tight_layout()
                         fig.savefig(folder+'/processing/deaths_births/birth_time_'+k+"_"+str(unique_value)+'.png')
                         plt.close(fig)

@@ -19,8 +19,8 @@ parser.add_argument("-c", "--competition", help = "Specify that dual values are 
 parser.add_argument("-p", dest='params', help="parameters in folder names to use", nargs='+')
 parser.add_argument("-v", "--verbose", help="print more information", action="store_true")
 parser.add_argument("--clean", help="cleans the folder before replotting", action="store_true")
-parser.add_argument("-g", "--max_generation", help="end generation for the temporal plots. Default is last generation", default=-1)
-parser.add_argument("-f", "--fraction", help="fraction of dataframe you want to plot (can be used to make plots quicker)", default=1)
+parser.add_argument("-g", "--max_generation", type=int, help="end generation for the temporal plots. Default is last generation", default=-1)
+parser.add_argument("-f", "--fraction", help="fraction of dataframe you want to plot (can be used to make plots quicker)", default=1, type=float)
 
 # Read arguments from command line
 args = parser.parse_args()
@@ -68,57 +68,59 @@ except:
     pass
 mit['bad_oxphos']=mit['ros']-mit['oxphos']
 
-interest_params = ['V','vol','n DNA','oxphos','ros','bad_oxphos', 'translate', 'replicate', 'replisomes', 'unmut']
+# interest_params = ['V','vol','n DNA','oxphos','ros','bad_oxphos', 'translate', 'replicate', 'replisomes', 'unmut']
+interest_params = ['vol','n DNA','oxphos','ros','replisomes', 'unmut']
 
 if args.max_generation != -1:
     mit = mit[mit['time'] <= max_generation]
 mit = mit [mit['time']>=5000]
 
-if params[-1]=='seed':
-    unique_plots = True
-    params = params[:-1]
-else:
-    unique_plots = False
+# if params[-1]=='seed':
+#     unique_plots = True
+#     params = params[:-1]
+# else:
+#     unique_plots = False
 
-if unique_plots:
+# if unique_plots:
+if args.verbose:
+    print("doing all unique plots")
+comb = []
+for k in params:
+    tmp_list = []
+    for val in mit[k].unique():
+        tmp_list+=[val]
+    comb += [tmp_list]
+combinations = list(itertools.product(*comb))
+for c in combinations:
     if args.verbose:
-        print("doing all unique plots")
-    comb = []
+        print("unique plot",c)
+    tmp = mit
+    i=0
     for k in params:
-        tmp_list = []
-        for val in mit[k].unique():
-            tmp_list+=[val]
-        comb += [tmp_list]
-    combinations = list(itertools.product(*comb))
-    for c in combinations:
+        tmp = tmp[tmp[k]==c[i]]
+        if tmp.empty:
+            continue
+        i+=1
+    for ev in interest_params:
         if args.verbose:
-            print("unique plot",c)
-        tmp = mit
-        i=0
-        for k in params:
-            tmp = tmp[tmp[k]==c[i]]
-            if tmp.empty:
-                continue
-            i+=1
-        for ev in interest_params:
-            if args.verbose:
-                print(ev)
-            fig, ax = plt.subplots(1, 1, figsize=(15,10))
-            for seed in mit['seed'].unique():
-                tmp2 = tmp[tmp['seed']==seed]
+            print(ev)
+        fig, ax = plt.subplots(1, 1, figsize=(15,10))
+        for seed in mit['seed'].unique():
+            tmp2 = tmp[tmp['seed']==seed]
+            if not tmp2.empty:
                 Z = [np.mean(tmp2[tmp2['time']==t][ev]) for t in tmp2['time'].unique()]
                 lab = 'seed '+str(seed)
                 ax.scatter(tmp2['time'].unique(), Z, label=lab, alpha=.6)
-            ax.set_ylabel(ev)
-            ax.set_xlabel('time')
-            ax.set_title("Mean "+ev+" over time for "+str(c))
-            ax.legend()
-            fig.tight_layout()
-            fig.savefig(folder+'/processing/mit/'+ev+'_time_'+str(c)+'_mean.png')
-            plt.close(fig)
-            
-    if args.verbose:
-        print("finished unique plots. On to merged seeds")
+        ax.set_ylabel(ev)
+        ax.set_xlabel('time')
+        ax.set_title("Mean "+ev+" over time for "+str(c))
+        ax.legend()
+        fig.tight_layout()
+        fig.savefig(folder+'/processing/mit/'+ev+'_time_'+str(c)+'_mean.png')
+        plt.close(fig)
+        
+if args.verbose:
+    print("finished unique plots. On to merged seeds")
 
 for k in params: # different values given at the beginning of the simulation    
     for ev in interest_params:
