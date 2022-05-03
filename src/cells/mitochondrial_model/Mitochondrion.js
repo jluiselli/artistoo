@@ -169,7 +169,7 @@ class Mitochondrion extends SubCell {
 
 		/** Do mutation steps on evolvables */
 		for (const evolvable in this.conf["evolvables_mit"]){
-			this[evolvable] = parent.cellParameter(evolvable)
+			this[evolvable] = parent[evolvable]
 			this[evolvable] += this.conf["evolvables_mit"][evolvable]["sigma"] * this.rand_normal()
 			if (this.conf["evolvables_mit"][evolvable]["lower_bound"] !== undefined){
 				this[evolvable] = Math.max(this[evolvable], this.conf["evolvables_mit"][evolvable]["lower_bound"])
