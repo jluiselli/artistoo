@@ -32,14 +32,11 @@ if args.competition:
     sys.exit()
 
 try:
-    df=pd.read_csv(folder+'/total_df.csv', low_memory=False, sep=";", dtype=str)
+    df=pd.read_csv(folder+'/total_df.csv', low_memory=False, sep=";")
 except:
     print("Data must have been aggregated with aggregate.py and collapse to total_df.csv before")
+    sys.exit()
 
-df = df.drop([i for i in df.columns if i[:7]=='Unnamed'], axis=1)
-df = df.drop(['host_id','V_host','vol_host','parent','total_vol','fission events', 'fusion events','mit_id',
-    'V_mit','oxphos_avg'], axis=1)
-df = df.replace({'undefined':'NaN',"True":1,"False":0})
 df = df.astype({'time':float})
 
 # n mito;total_oxphos;seed;vol_mit;n DNA;oxphos;ros;translate;replicate;replisomes;unmut
@@ -50,7 +47,15 @@ if args.generation != -1:
 else:
     target_gen = float(max(df['time'])) # retaining only the final data
 df = df[df['time']==target_gen]
+
 df = df.drop(['time'], axis=1)
+df = df.drop([i for i in df.columns if i[:7]=='Unnamed'], axis=1)
+df = df.drop(['host_id','V_host','vol_host','parent','total_vol','fission events', 'fusion events','mit_id',
+    'V_mit','oxphos_avg'], axis=1)
+
+df = df.astype({'unmut':str})
+df = df.replace({'nan':0,'NaN':0,'undefined':0,"True":1,"False":0}) #undefined is in unmut
+# Makes sense to be 0 as there is no DNA = bad sign (!= 1 would be perfect DNA)
 
 
 df = df.astype(float)

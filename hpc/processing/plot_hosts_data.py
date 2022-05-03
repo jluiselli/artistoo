@@ -35,7 +35,6 @@ try:
     try:
         hosts = hosts.drop(['time of birth','good','bads','dna','type','total_vol'], axis=1)
         hosts = hosts.drop([i for i in hosts.columns if i[:7]=='Unnamed'], axis=1)
-        hosts = hosts.drop(['genes'], axis=1)
     except:
         pass
     if args.competition:
@@ -50,7 +49,7 @@ try:
         print('now sampling the df')
     hosts = hosts.sample(frac=args.fraction)
 
-    hosts = hosts.replace({'undefined':'NaN',"True":1,"False":0})
+    hosts = hosts.replace({'undefined':'NaN',"true":1,"false":0})
     if args.verbose:
         print('all set to convert to float')
     hosts = hosts.astype(float)
@@ -101,6 +100,7 @@ else:
     interest_params += [i for i in hosts.columns if i[:10]=='evolvables']
 
 # interest_params = ["evolvables_fusion_rate"] #Tmp quick plot
+interest_params+=['fission events', 'fusion events']
 
 hosts = hosts.astype({'seed':str})
 minimums, maximums = {}, {}

@@ -48,7 +48,9 @@ for f in [seed_folder for seed_folder in os.listdir(folder) if seed_folder[:4]==
     print(params)
     try:
         deaths_tmp = pd.read_csv('./'+folder+'/'+f+'/deaths.csv', sep=';', low_memory=False)
+        # print(deaths_tmp)
         divisions_tmp = pd.read_csv('./'+folder+'/'+f+'/divisions.csv', sep=';', low_memory=False)
+        print(divisions_tmp)
        
         
         for k in params:

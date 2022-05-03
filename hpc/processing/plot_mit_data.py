@@ -9,6 +9,7 @@ import random
 import colorsys
 import itertools
 import argparse
+import seaborn as sns
  
 # Initialize parser
 parser = argparse.ArgumentParser()
@@ -36,15 +37,22 @@ if args.competition:
 
 try:
     mit=pd.read_csv(folder+'/mit.csv', low_memory=False, sep=';')
+    if args.verbose:
+        print(mit.columns)
     mit = mit.drop(['products', 'bad products', 'sum dna', 'new DNA ids'], axis=1)
-    mit = mit.drop([i for i in hosts.columns if i[:7]=='Unnamed'], axis=1)
+    mit = mit.drop([i for i in mit.columns if i[:7]=='Unnamed'], axis=1)
+    mit = mit.replace({'undefined':"NaN", "True":1,"False":0, "true":1, "false":0})
+
+    for col in mit.columns:
+        print(col)
+        mit = mit.astype({col:float})
     mit = mit.astype(float)
     mit = mit.sample(frac=args.fraction)
     if args.verbose:
         print(mit.columns)
 except:
     print("Data must have been aggregated with aggregate.py before")
-    exit
+    sys.exit()
 
 
 if not os.path.isdir(folder+'/processing/'):
@@ -71,6 +79,14 @@ mit['bad_oxphos']=mit['ros']-mit['oxphos']
 
 # interest_params = ['V','vol','n DNA','oxphos','ros','bad_oxphos', 'translate', 'replicate', 'replisomes', 'unmut']
 interest_params = ['vol','n DNA','oxphos','ros','replisomes', 'unmut']
+interest_params += [i for i in mit.columns if i[:10]=='evolvables']
+
+minimums, maximums = {}, {}
+for ev in interest_params:
+    minimums[ev] = min(mit[ev])
+    maximums[ev] = max(mit[ev])
+if args.verbose:
+    print(maximums, minimums)
 
 if args.max_generation != -1:
     mit = mit[mit['time'] <= max_generation]
@@ -92,6 +108,9 @@ for k in params:
         tmp_list+=[val]
     comb += [tmp_list]
 combinations = list(itertools.product(*comb))
+mit = mit.astype({"seed":str})
+tmp = mit.sample(frac=.01)
+
 for c in combinations:
     if args.verbose:
         print("unique plot",c)
@@ -105,6 +124,19 @@ for c in combinations:
     for ev in interest_params:
         if args.verbose:
             print(ev)
+
+        if ev[:10]=='evolvables':
+            fig, ax = plt.subplots(1, 1, figsize=(15,10))
+            sns.scatterplot(x='time', y=ev, data=tmp, ax=ax, hue="seed")
+            ax.set_ylim(minimums[ev], maximums[ev])
+            ax.set_ylabel(ev)
+            ax.set_xlabel('time')
+            ax.legend()
+            ax.set_title(ev+" over time "+str(c))
+            fig.tight_layout()
+            fig.savefig(folder+'/processing/mit/'+ev+'_time_'+str(c)+'.png')
+            plt.close(fig)
+
         fig, ax = plt.subplots(1, 1, figsize=(15,10))
         for seed in mit['seed'].unique():
             tmp2 = tmp[tmp['seed']==seed]
@@ -113,6 +145,7 @@ for c in combinations:
                 lab = 'seed '+str(seed)
                 ax.scatter(tmp2['time'].unique(), Z, label=lab, alpha=.6)
         ax.set_ylabel(ev)
+        # ax.set_ylim(minimums[ev], maximums[ev])
         ax.set_xlabel('time')
         ax.set_title("Mean "+ev+" over time for "+str(c))
         ax.legend()
@@ -141,7 +174,9 @@ for k in params: # different values given at the beginning of the simulation
             lab = str(k)+' '+str(unique_value)
             ax.scatter(tmp['time'].unique(), Z, label=lab, alpha=.6)
         ax.set_ylabel(ev)
+        # ax.set_ylim(minimums[ev], maximums[ev])
         ax.set_xlabel('time')
+        ax.legend()
         ax.set_title("Mean "+ev+" over time for different "+k)
         fig.tight_layout()
         fig.savefig(folder+'/processing/mit/'+ev+'_time_'+k+'_summarize.png')
@@ -166,6 +201,7 @@ for k in params: # different values given at the beginning of the simulation
                         lab = str(other_param)+' '+str(value)
                         ax.scatter(tmp2['time'].unique(), Z, label=lab, alpha=.6)
                     ax.set_ylabel(ev)
+                    # ax.set_ylim(minimums[ev], maximums[ev])
                     ax.legend()
                     ax.set_xlabel('time')
                     ax.set_title("Mean "+ev+" over time for different "+other_param+"\n"+k+" is "+str(unique_value))

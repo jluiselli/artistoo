@@ -38,8 +38,27 @@ try:
         print(df_deaths.columns)
         print(df_divisions.columns)
 except:
-    print("***\nDeaths and births must have been aggregated !\nWarning: this can be very long for ancient simulations\n***")
-    sys.exit()
+    try: # New type of data
+        df_deaths_mit = pd.read_csv(folder+'/deaths_mit.csv', low_memory=False, sep=";")
+        df_deaths_mit["type"] = "mito"
+        df_deaths_host = pd.read_csv(folder+'/deaths_host.csv', low_memory=False, sep=";")
+        df_deaths_host["type"] = "host"
+        df_deaths = pd.concat([df_deaths_host, df_deaths_mit], sort=False)
+        if args.verbose:
+            print(df_deaths)
+            print(df_deaths_host, df_deaths_mit)
+            print(df_deaths.columns)
+        df_divisions = pd.read_csv(folder+'/divisions.csv', low_memory=False, sep=';')
+        if args.verbose:
+            print(df_divisions.columns)
+    except:
+        print("***\nDeaths and births must have been aggregated !\nWarning: this can be very long for ancient simulations\n***")
+        sys.exit()
+
+try:
+    df_divisions = df_divisions.rename(columns={"parent_time":"time"})
+except:
+    pass
 
 if args.max_generation != -1:
     df_deaths = df_deaths[df_deaths['time']<args.max_generation]
@@ -51,7 +70,7 @@ if not os.path.isdir(folder+'/processing/'):
     os.mkdir(folder+'/processing/')
 
 if args.clean:
-    shutil.rmtree(folder+'/processing/deaths_births/')
+    shutil.rmtree(folder+'/processing/deaths_births/', ignore_errors=True)
 
 if not os.path.isdir(folder+'/processing/deaths_births/'):
     print('The directory is not present or has been removed. Creating a new one..')
@@ -64,12 +83,14 @@ usual_colors = ['tab:blue', 'tab:orange', 'tab:green','tab:purple','tab:red',
 
 if params[-1]=='seed':
     unique_plots = True
+else:
+    unique_plots = False
 
 for celltype in ['host','mito']:
     if args.verbose:
         print(celltype)
-        print(df_deaths)
-        print(df_divisions)
+        # print(df_deaths)
+        # print(df_divisions)
     deaths = df_deaths[df_deaths['type']==celltype]
     divisions = df_divisions
     if unique_plots:
@@ -121,6 +142,7 @@ for celltype in ['host','mito']:
         if k!='seed':
             if args.verbose:
                 print(k)
+            deaths = deaths.sort_values(by=[k])
             fig, ax = plt.subplots(1, 1, figsize=(15,10))
             ax.hist([deaths[deaths[k]==x]["time"] for x in deaths[k].unique()],
                 label=deaths[k].unique())
@@ -132,6 +154,7 @@ for celltype in ['host','mito']:
             fig.savefig(folder+'/processing/deaths_births/death_time_'+k+'_'+celltype+'.png')
             plt.close(fig)
 
+            divisions = divisions.sort_values(by=[k])
             fig, ax = plt.subplots(1, 1, figsize=(15,10))
             ax.hist([divisions[divisions[k]==x]["time"] for x in divisions[k].unique()],
                 label=divisions[k].unique())
@@ -151,6 +174,8 @@ for celltype in ['host','mito']:
                     continue
                 for other_param in params:
                     if k!=other_param:
+                        tmp_deaths = tmp_deaths.sort_values(by=[other_param])
+                        tmp_divisions = tmp_divisions.sort_values(by=[other_param])
                         fig, ax = plt.subplots(1, 1, figsize=(15,10))
                         ax.hist([tmp_deaths[tmp_deaths[other_param]==x]["time"] for x in tmp_deaths[other_param].unique()],
                             label=tmp_deaths[other_param].unique())

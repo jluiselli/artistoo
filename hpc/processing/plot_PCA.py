@@ -35,10 +35,8 @@ try:
     hosts=pd.read_csv(folder+'/hosts.csv', low_memory=False, sep=";", dtype=str)
 except:
     print("Data must have been aggregated with aggregate.py before")
+    sys.exit()
 
-hosts = hosts.drop([i for i in hosts.columns if i[:7]=='Unnamed'], axis=1)
-hosts = hosts.drop(['time of birth','good','bads','dna','type', 'fission events', 'fusion events'], axis=1)
-hosts = hosts.replace({'undefined':'NaN',"True":1,"False":0})
 hosts = hosts.astype({'time':float})
 
 if args.generation != -1:
@@ -48,6 +46,10 @@ else:
     target_gen = float(max(hosts['time'])) # retaining only the final data
 hosts = hosts[hosts['time']==target_gen]
 hosts = hosts.drop(['time','id', 'parent','total_vol'], axis=1) #No NaN possibe and total_vol not always defined
+
+hosts = hosts.drop([i for i in hosts.columns if i[:7]=='Unnamed'], axis=1)
+hosts = hosts.drop(['time of birth','good','bads','dna','type', 'fission events', 'fusion events'], axis=1)
+hosts = hosts.replace({"True":1,"False":0})
 
 try:
     hosts = hosts.astype(float)
