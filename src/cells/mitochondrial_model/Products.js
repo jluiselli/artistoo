@@ -2,10 +2,10 @@
 class Products {
 
 	/* eslint-disable */ 
-	constructor (conf, C) {
+	constructor (conf, C, kind) {
         // this.C = C
         this.conf = conf
-        this.arr = new Array(this.conf["N_OXPHOS"]+this.conf["N_TRANSLATE"]+this.conf["N_REPLICATE"]).fill(0)
+        this.arr = new Array(this.conf["N_OXPHOS"]+this.conf["N_TRANSLATE"]+this.conf["N_REPLICATE"][kind-3]).fill(0)
         this.C = C
     }
 

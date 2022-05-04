@@ -8,8 +8,8 @@ class nDNA extends DNA {
      * @param conf.NDNA_MUT_REP mutation rate at replication - only daughter gets this
      * this overwrites DNA initialization to set REPLICATE genes to existing and good.
      */
-	constructor (conf, C, idstr, parent) {
-		super(conf,C, idstr, parent)
+	constructor (conf, C, idstr, parent, kind) {
+		super(conf,C, idstr, parent, kind)
 		if (parent instanceof nDNA){
 			this.mutate(this.conf["NDNA_MUT_REP"])
 		} else {

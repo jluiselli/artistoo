@@ -15,23 +15,27 @@ class DNA {
      * @param {CPMEvol} C - the model (may be able to use with CPM or other subclasses, but explicitly written for CPMEvol)
      * @param {String} idstr - unique identifier string (for postprocessing)
      * @param {DNA} parent - parent DNA copy
+	 * @param {Number} kind --kind of the cell to which the DNA is attached (1, 2, 3, 4 -> See config.js)
+	 * Presumes that there are two types of celles, with each its mitochondrion type (different properties)
      * 
      * @param {Number} conf.N_OXPHOS - number of oxphos genes
      * @param {Number} conf.N_TRANSLATE - number of translate genes
-     * @param {Number} conf.N_REPLICATE - number of replicate genes
+     * @param {Number} conf.N_REPLICATE - number of replicate genes 
      */
-	constructor (conf, C , idstr, parent) {
+	constructor (conf, C , idstr, parent, kind) {
 		this.C = C
 		this.conf = conf
 		this.id = idstr //unique string
 		this.replicating = 0
 
+		this.kind = kind
+
 		if (parent instanceof DNA){
 			this.quality = [...parent.quality]
 			this.exists = [...parent.exists]
 		} else {
-			this.quality = new Array(this.conf["N_OXPHOS"]+this.conf["N_TRANSLATE"]+this.conf["N_REPLICATE"]).fill(0)
-			this.exists = new Array(this.conf["N_OXPHOS"]+this.conf["N_TRANSLATE"]+this.conf["N_REPLICATE"]).fill(0)
+			this.quality = new Array(this.conf["N_OXPHOS"]+this.conf["N_TRANSLATE"]+this.conf["N_REPLICATE"][this.kind-1]).fill(0)
+			this.exists = new Array(this.conf["N_OXPHOS"]+this.conf["N_TRANSLATE"]+this.conf["N_REPLICATE"][this.kind-1]).fill(0)
 		}
 	}
 

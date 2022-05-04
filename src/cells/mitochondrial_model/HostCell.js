@@ -54,7 +54,7 @@ class HostCell extends SuperCell {
 		this.total_oxphos = 0
 
 		/** initialize DNA */
-		this.DNA = new nDNA(conf, C, String(this.id)) 
+		this.DNA = new nDNA(conf, C, String(this.id), -1, kind) 
 
 		/** initialize count of fusion and fission */
 		this.fission_events = 0
@@ -80,7 +80,7 @@ class HostCell extends SuperCell {
 		parent.total_oxphos *= (1-partition)
 
 		/** Make new DNA for daughter */
-		this.DNA = new nDNA(this.conf, this.C,String(this.id), parent.DNA)
+		this.DNA = new nDNA(this.conf, this.C,String(this.id), parent.DNA, this.kind)
 		
 		/** Do mutation steps on evolvables */
 		for (const evolvable in this.conf["evolvables"]){
@@ -207,7 +207,7 @@ class HostCell extends SuperCell {
 	 * nDNA and sums all genes of both, but this seems very robust.
 	 */
 	get dna_good(){
-		return this.DNA.sumQuality() == new nDNA(this.conf, this.C).sumQuality()
+		return this.DNA.sumQuality() == new nDNA(this.conf, this.C, undefined, undefined, this.kind).sumQuality()
 	}
 
 	/**

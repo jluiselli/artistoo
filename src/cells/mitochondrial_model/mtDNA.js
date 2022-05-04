@@ -11,8 +11,8 @@ class mtDNA extends DNA {
      * @param conf.MTDNA_MUT_REP mutation rate at replication - only daughter gets this
      * this overwrites DNA initialization to set OXPHOS and TRANSLATE genes to existing and good.
      */
-	constructor (conf, C, idstr, parent) {
-		super(conf,C, idstr, parent)
+	constructor (conf, C, idstr, parent, kind) {
+		super(conf,C, idstr, parent, kind-2) // Remove the 2 hosts cells from count
 		if (parent instanceof mtDNA){
 			this.mutate(this.conf["MTDNA_MUT_REP"])
 		} else {
