@@ -128,7 +128,7 @@ evolvables = [i for i in df.columns if i[:10]=='evolvables']
 
 non_plottable = [i for i in params]
 non_plottable += ['time', 'id', 'V', 'seed', 'time of birth',
-    'fission events', 'fusion events', 'repliosomes', 'parent', 'genes']
+    'fission events', 'fusion events', 'repliosomes', 'parent', 'genes', 'comb']
 
 comb = []
 for k in params:

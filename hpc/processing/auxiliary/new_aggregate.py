@@ -34,7 +34,7 @@ for f in [seed_folder for seed_folder in os.listdir(folder) if seed_folder[:4]==
     i = 0
     while i < len(k):
         try:
-            if k[i][-2:]=='1e' or k[i][-2:]=='5e': #For degenerated cases of rates
+            if k[i][-2:]=='1e' or k[i][-2:]=='5e' or k[i][-2:]=='2e': #For degenerated cases of rates
                 k[i] = k[i]+ '-' + k[i+1]
                 if i < len(k)-2:
                     k = k[:i+1]+k[i+2:]
