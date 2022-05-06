@@ -31,7 +31,7 @@ let config = {
         
         N_OXPHOS : 5, 
         N_TRANSLATE : 5,
-        N_REPLICATE : 50,
+        N_REPLICATE : [50,50],
         INIT_MITO_V : 500,
         N_INIT_DNA : 5,
         MTDNA_MUT_REP : 0.0003,
@@ -54,9 +54,9 @@ let config = {
         // First value is always cellkind 0 (the background) and is often not used.
 
         REPLICATE_TIME: 30,
-        fission_rate : [0.000013,0.00003],
-        fusion_rate : [0.00077,0.00021],
-        rep: [23.8,12.8],
+        fission_rate : [0.00002,0.00002],
+        fusion_rate : [0.0001,0.0001],
+        rep: [19,19],
         rep2: 0,
         evolvables: {
                     // "fission_rate": {"sigma" : 0.000001}, 
@@ -75,7 +75,7 @@ let config = {
         MITO_GROWTH_MAX : 9,
         HOST_GROWTH_MAX : 9,
         MITO_V_PER_OXPHOS : 2,
-        HOST_V_PER_OXPHOS : [0.35,0.15],
+        HOST_V_PER_OXPHOS : [0.3,0.3],
     
         VOLCHANGE_THRESHOLD : 10,
         SELECTIVE_FUSION: false,
@@ -85,7 +85,7 @@ let config = {
         // VolumeConstraint parameters
         LAMBDA_V : [0, 1, 1, 1],                // VolumeConstraint importance per cellkind
         V : [0,502, 502, 200],                    
-        host_division_volume: [2274,3421],
+        host_division_volume: [2000,2000],
     },
     
     // Simulation setup and configuration: this controls stuff like grid initialization,
@@ -97,7 +97,7 @@ let config = {
         // non-background cellkinds. 
         // Runtime etc
         BURNIN : 0,
-        RUNTIME : 5000,
+        RUNTIME : 1000,
         RUNTIME_BROWSER : "Inf",
         
         // Visualization
@@ -157,7 +157,7 @@ function seedSubCells(){
         if (sim.C.cellKind(cid) == 1 || sim.C.cellKind(cid) == 2){
             for (let i =0; i < sim.conf["NRCELLS"][2]; i++){
                 let coord = cellpixelsbyid[cid][Math.floor(sim.C.mt.random()*cellpixelsbyid[cid].length)]
-                let nid = sim.gm.seedCellAt( 3, coord )
+                let nid = sim.gm.seedCellAt(3, coord, sim.C.cellKind(cid))
                 sim.C.cells[nid].host = cid
             }
         }
