@@ -5,7 +5,7 @@ class Products {
 	constructor (conf, C, kind) {
         // this.C = C
         this.conf = conf
-        this.arr = new Array(this.conf["N_OXPHOS"]+this.conf["N_TRANSLATE"]+this.conf["N_REPLICATE"][kind-3]).fill(0)
+        this.arr = new Array(this.conf["N_OXPHOS"]+this.conf["N_TRANSLATE"]+this.conf["N_REPLICATE"][kind-1]).fill(0)
         this.C = C
     }
 

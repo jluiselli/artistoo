@@ -39,12 +39,14 @@ class Mitochondrion extends SubCell {
      * -
      * @param {Number} conf.REPLICATE_TIME - the number of timesteps an mtDNA replication event takes.
      * 
+     * @param {Number} parentkind
      * Any parameters can also be controlled by the HostCell through 'evolvables' - but this still requires an 
      * initial value to be present in the conf object
      */
-	constructor (conf, kind, id, C) {
+	constructor (conf, kind, id, C, hostid) {
 		super(conf, kind, id, C)
-        
+		this.parentkind = this.C.cells[hostid].kind
+
 		/** initialize DNA + mutate this initial pool */
 		/** tracks how many new dna's have come from this mitochondrion (does not track well with fusion)
          * is meant to at least allow fully unique DNA id's
@@ -56,7 +58,7 @@ class Mitochondrion extends SubCell {
         */
 		this.DNA = []
 		for (let i= 0; i<this.conf["N_INIT_DNA"];i++){
-			let dna = new mtDNA(this.conf, this.C, String(this.id) +"_"+ String(++this.last_dna_id), undefined, this.kind)
+			let dna = new mtDNA(this.conf, this.C, String(this.id) +"_"+ String(++this.last_dna_id), undefined, this.parentkind)
 			dna.mutate(this.conf["MTDNA_MUT_INIT"])
 			this.DNA.push(dna) // new js object arrays need to be filled one-by-one to not add the same object multiple times
 		}
@@ -86,7 +88,7 @@ class Mitochondrion extends SubCell {
          * Holder for all gene products from nonmutated genes 
          * @type {Products} - a wrapper for an array of integers
          */
-		this.products = new Products(this.conf, this.C, this.kind)
+		this.products = new Products(this.conf, this.C, this.parentkind)
 		/** set initial numbers at start of run 
          *  NOTE: this is called in  construction - so needs to be removed for any other birth event
          */
@@ -95,7 +97,7 @@ class Mitochondrion extends SubCell {
          * Holder for all gene products from mutated genes 
          * @type {Products}- a wrapper for an array of integers
          */
-		this.bad_products = new Products(this.conf, this.C, this.kind)
+		this.bad_products = new Products(this.conf, this.C, this.parentkind)
 	}
 	
 	/**
@@ -105,8 +107,8 @@ class Mitochondrion extends SubCell {
      */
 	clear(){
 		this.DNA = []
-		this.products = new Products(this.conf, this.C, this.kind)
-		this.bad_products = new Products(this.conf, this.C, this.kind)
+		this.products = new Products(this.conf, this.C, this.parentkind)
+		this.bad_products = new Products(this.conf, this.C, this.parentkind)
 	}
 
 	/**
@@ -118,6 +120,7 @@ class Mitochondrion extends SubCell {
 	birth(parent, partition){
 		/** handle superclass things */
 		super.birth(parent)
+		this.parentkind = parent.parentkind
 		/** clear unnecessary initialization */
 		this.clear()
 
@@ -269,7 +272,7 @@ class Mitochondrion extends SubCell {
 
 	/** gets number of unmutated DNA copies */
 	get unmutated(){
-		return this.DNA.reduce((t,e) =>  e.sumQuality() == new mtDNA(this.conf, this.C, undefined, undefined, this.kind).sumQuality() ? t+1 : t, 0)
+		return this.DNA.reduce((t,e) =>  e.sumQuality() == new mtDNA(this.conf, this.C, undefined, undefined, this.parentkind).sumQuality() ? t+1 : t, 0)
 	}
 
 	/**
@@ -315,7 +318,7 @@ class Mitochondrion extends SubCell {
 				replicate_attempts--
 				dna.replicating--
 				if (dna.replicating == 0){
-					new_dna.push(new mtDNA(this.conf, this.C, String(this.id) + "_" + String(++this.last_dna_id), dna, this.kind)) 
+					new_dna.push(new mtDNA(this.conf, this.C, String(this.id) + "_" + String(++this.last_dna_id), dna, this.parentkind))
 				}
 			}
 		}
@@ -446,7 +449,7 @@ class Mitochondrion extends SubCell {
 		mito["products"] = this.products.arr
 		mito["bad products"] = this.bad_products.arr
 		// mito['products at bad host DNA'] = this.debug_hostbad_printer()
-		let sumdna = new Array(this.conf["N_OXPHOS"]+this.conf["N_TRANSLATE"]+this.conf["N_REPLICATE"][this.kind-3]).fill(0)
+		let sumdna = new Array(this.conf["N_OXPHOS"]+this.conf["N_TRANSLATE"]+this.conf["N_REPLICATE"][this.parentkind-1]).fill(0)
 		for (let dna of this.DNA){
 			sumdna = this.sum_arr(sumdna, dna.quality)
 		}

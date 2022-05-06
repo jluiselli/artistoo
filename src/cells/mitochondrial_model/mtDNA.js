@@ -12,7 +12,7 @@ class mtDNA extends DNA {
      * this overwrites DNA initialization to set OXPHOS and TRANSLATE genes to existing and good.
      */
 	constructor (conf, C, idstr, parent, kind) {
-		super(conf,C, idstr, parent, kind-2) // Remove the 2 hosts cells from count
+		super(conf,C, idstr, parent, kind)
 		if (parent instanceof mtDNA){
 			this.mutate(this.conf["MTDNA_MUT_REP"])
 		} else {

@@ -150,7 +150,7 @@ class SuperCell extends Cell {
 			if (newpix.length == pix[id].length){
 				C.cells[id].host = newhost
 			} else if (newpix.length > 0){
-				let nid = C.makeNewCellID( C.cellKind( id ) )
+				let nid = C.makeNewCellID( C.cellKind( id ), this.id )
 				for (let pix of newpix){
 					C.setpix(pix, nid)
 				}

@@ -123,11 +123,13 @@ class GridManipulator {
 	 * 	console.log( p )
 	 * }
 	 */
-	seedCellAt( kind, p ){
-	
-		const newid = this.C.makeNewCellID( kind )
+	seedCellAt( kind, p, parid=-1 ){
+		const newid = this.C.makeNewCellID( kind, parid)
 		this.C.grid.checkOnGrid(p)
 		this.C.setpix( p, newid )
+		if (parid != -1){
+			this.C.cells[newid].host = parid
+		}
 		return newid
 
 	}
@@ -502,7 +504,7 @@ class GridManipulator {
 			y1 = bxy
 		}
 		// create a new ID for the second cell
-		let nid = C.makeNewCellID( C.cellKind( id ) )
+		let nid = C.makeNewCellID( C.cellKind( id ), this.C.cells[id].host )
 		
 		let newpix = []
 		if (partition === 0.5){
