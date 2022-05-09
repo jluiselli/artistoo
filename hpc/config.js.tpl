@@ -157,7 +157,7 @@ function seedSubCells(){
         if (sim.C.cellKind(cid) == 1 || sim.C.cellKind(cid) == 2){
             for (let i =0; i < sim.conf["NRCELLS"][2]; i++){
                 let coord = cellpixelsbyid[cid][Math.floor(sim.C.mt.random()*cellpixelsbyid[cid].length)]
-                let nid = sim.gm.seedCellAt(3, coord, sim.C.cellKind(cid))
+                let nid = sim.gm.seedCellAt(3, coord, cid)
                 sim.C.cells[nid].host = cid
             }
         }
