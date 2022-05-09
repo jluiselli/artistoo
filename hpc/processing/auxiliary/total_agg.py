@@ -55,7 +55,8 @@ for f in [seed_folder for seed_folder in os.listdir(folder) if seed_folder[:4]==
                         if args.verbose:
                             print("no cplx")
                         hosts_tmp['cplx']=0
-                hosts_tmp=hosts_tmp[hosts_tmp["genes"] != 100]
+                if "genes" in hosts_tmp.columns:
+                    hosts_tmp=hosts_tmp[hosts_tmp["genes"] != 100]
             elif f[:3]=='mit' and string=="mit" and f!='mit.csv':
                 mit_tmp = pd.read_csv('./'+folder+'/'+f, sep=';', low_memory=False)
                 if args.cplx:
@@ -67,7 +68,8 @@ for f in [seed_folder for seed_folder in os.listdir(folder) if seed_folder[:4]==
                         if args.verbose:
                             print("no cplx")
                         mit_tmp['cplx']=0
-                mit_tmp=mit_tmp[mit_tmp["genes"] != 100]
+                if "genes" in mit_tmp.columns:
+                    mit_tmp=mit_tmp[mit_tmp["genes"] != 100]
 
         # try:
         #     deaths_mit_tmp = pd.read_csv('./'+folder+'/'+f+'/Mit_deaths.txt', sep=';', low_memory=False)
@@ -90,6 +92,7 @@ for f in [seed_folder for seed_folder in os.listdir(folder) if seed_folder[:4]==
             # print(deaths_mit, deaths_host, divisions)
     
     except:
+        print("error for ",f)
         pass
     
 if "host" in args.params:

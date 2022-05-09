@@ -45,14 +45,19 @@ try:
             hosts[new_name1] = [i[0] for i in hosts[ev]]
             hosts[new_name2] = [i[1] for i in hosts[ev]]
             hosts = hosts.drop([ev], axis=1)
-    if args.verbose:
-        print('now sampling the df')
-    hosts = hosts.sample(frac=args.fraction)
+    if args.fraction != 1:
+        if args.verbose:
+            print('now sampling the df')
+        hosts = hosts.sample(frac=args.fraction)
 
-    hosts = hosts.replace({'undefined':'NaN',"true":1,"false":0})
+    hosts = hosts.replace({'undefined':'NaN',"true":1,"false":0, "True":1, "False":0})
     if args.verbose:
         print('all set to convert to float')
+    # for col in hosts.columns:
+    #     print(col)
+    #     hosts = hosts.astype({col:float})
     hosts = hosts.astype(float)
+    hosts = hosts.sort_values(by=params)
     
 except:
     print("Data must have been aggregated with aggregate.py before plotting")
@@ -80,7 +85,7 @@ else:
 
 
 try:
-    hosts['growth_rate']=hosts['growth_rate'].replace({15:1.5, 5:0.5})
+    hosts['growth_rate']=hosts['growth_rate'].replace({15:1.5, 5:0.5,20:2.0,25:2.5})
 except:
     pass
 try:
@@ -141,8 +146,11 @@ for c in combinations:
             print(ev)
         fig, ax = plt.subplots(1, 1, figsize=(15,10))
         sns.scatterplot(x='time', y=ev, data=tmp, ax=ax, hue="seed")
-        # , alpha=alpha)            
-        ax.set_ylim(minimums[ev], maximums[ev])
+        # , alpha=alpha)
+        try:            
+            ax.set_ylim(minimums[ev], maximums[ev])
+        except:
+            pass
         ax.set_ylabel(ev)
         ax.set_xlabel('time')
         ax.legend()
@@ -183,7 +191,10 @@ for k in params: # different values given at the beginning of the simulation
             lab = str(k)+' '+str(unique_value)
             ax.scatter(tmp['time'].unique(), Z, label=lab, alpha=.6)
         ax.set_ylabel(ev)
-        ax.set_ylim(minimums[ev], maximums[ev])
+        try:
+            ax.set_ylim(minimums[ev], maximums[ev])
+        except:
+            pass
         ax.set_xlabel('time')
         ax.set_title("Mean "+ev+" over time for different "+k)
         ax.legend()
@@ -221,7 +232,10 @@ for k in params: # different values given at the beginning of the simulation
                         lab = str(other_param)+' '+str(value)
                         ax.scatter(tmp2['time'].unique(), Z, label=lab, alpha=.6)
                     ax.legend()
-                    ax.set_ylim(minimums[ev], maximums[ev])
+                    try:
+                        ax.set_ylim(minimums[ev], maximums[ev])
+                    except:
+                        pass
                     ax.set_ylabel(ev)
                     ax.set_xlabel('time')
                     ax.set_title("Mean "+ev+" over time for different "+other_param+"\n"+k+" is "+str(unique_value))

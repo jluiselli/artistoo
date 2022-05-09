@@ -39,7 +39,7 @@ try:
     mit=pd.read_csv(folder+'/mit.csv', low_memory=False, sep=';')
     if args.verbose:
         print(mit.columns)
-    mit = mit.drop(['products', 'bad products', 'sum dna', 'new DNA ids'], axis=1)
+    mit = mit.drop(['products', 'bad products', 'sum dna', 'new DNA ids','type'], axis=1)
     mit = mit.drop([i for i in mit.columns if i[:7]=='Unnamed'], axis=1)
     mit = mit.replace({'undefined':"NaN", "True":1,"False":0, "true":1, "false":0})
 
