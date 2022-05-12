@@ -135,16 +135,6 @@ class Mitochondrion extends SubCell {
 		return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v )
 	}
 
-	/** Get standard Normal variate from univariate using Box-Muller transform.
-	 *  Code edited from https://stackoverflow.com/questions/25582882/javascript-math-random-normal-distribution-gaussian-bell-curve
-	 */ 
-	rand_normal() {
-		let u = 0, v = 0
-		while(u === 0) u = this.C.random() //Converting [0,1) to (0,1)
-		while(v === 0) v = this.C.random()
-		return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v )
-	}
-
 	/**
      * Birth call on new mitochondrion, handles stochastic division of products and 
      * mtDNA copies. 
