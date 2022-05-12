@@ -173,7 +173,7 @@ class Mitochondrion extends SubCell {
          * do ∆V 
          */
 		let dV = 0
-		dV += this.oxphos * this.cellParameter("MITO_V_PER_OXPHOS")
+		dV += this.oxphos * this.cellParameter("MITO_V_PER_OXPHOS")[this.parentkind-1]
 		dV-= this.cellParameter("MITO_SHRINK")
 		dV = Math.min(this.cellParameter("MITO_GROWTH_MAX"), dV)
 		// optional mitophagy thresholding

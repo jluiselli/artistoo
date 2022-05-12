@@ -199,6 +199,7 @@ class HostCell extends SuperCell {
 		for (const evolvable in this.conf.evolvables){
 			dct["evolvables"][evolvable] = this[evolvable]
 		}
+		dct["kind"] = this.kind
 		return dct
 	}
 

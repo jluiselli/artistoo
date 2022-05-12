@@ -74,7 +74,7 @@ let config = {
         HOST_SHRINK : 5,
         MITO_GROWTH_MAX : 9,
         HOST_GROWTH_MAX : 9,
-        MITO_V_PER_OXPHOS : 2,
+        MITO_V_PER_OXPHOS : [2,2],
         HOST_V_PER_OXPHOS : [0.3,0.3],
     
         VOLCHANGE_THRESHOLD : 10,
