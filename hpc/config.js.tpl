@@ -74,6 +74,7 @@ let config = {
 	
 		VOLCHANGE_THRESHOLD : 10,
 		SELECTIVE_FUSION: false,
+        FUSION_THRESHOLD : 0,
 
 		MITO_PARTITION : 0.5,
         MITO_DIV_VOLUME : -1,
