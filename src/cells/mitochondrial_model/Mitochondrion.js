@@ -407,6 +407,79 @@ class Mitochondrion extends SubCell {
 	}
 
 	/**
+     * Do all internal processes of sharing:
+     * combine Products and form complexes
+     * combine mtDNA
+     *  * divide mtDNA, Products dans complexes
+     * @param {Mitochondrion} partner 
+     */
+	share(partner) {
+		// console.log("sharing ", this.id, "with", partner.id)
+		// console.log(this.products.arr, this.bad_products.arr)
+		/** add things */
+		// console.log("before sharing",this.oxphos_cplx,
+		// 	this.translate_cplx,
+		// 	this.replicate_cplx,
+		// 	this.total_oxphos)
+		this.products.arr = this.sum_arr(this.products.arr, partner.products.arr)
+		this.bad_products.arr = this.sum_arr(this.bad_products.arr, partner.bad_products.arr)
+		this.DNA = [...this.DNA, ...partner.DNA]
+		this.complexes = [...this.complexes, ...partner.complexes]
+		this.oxphos_cplx += partner.oxphos_cplx
+		this.translate_cplx += partner.translate_cplx
+		this.replicate_cplx += partner.replicate_cplx
+		this.total_oxphos += partner.total_oxphos
+		// console.log("common complexes",this.oxphos_cplx,
+		// 	this.translate_cplx,
+		// 	this.replicate_cplx,
+		// 	this.total_oxphos)
+		/** Clear partner of this products, complexes and DNA */
+		partner.clear()
+	
+		/** Form potention new complexes */
+		this.makeAssemblies()
+
+		/** Separate everything again based on their respective volume */
+		let partition = partner.vol/(this.vol + partner.vol) // propotion of things that should go to partner
+		// console.log(this.vol, partner.vol, partition)
+		this.divideProducts(this.products, partner.products, partition)
+		this.divideProducts(this.bad_products, partner.bad_products, partition)
+
+		/** stochastically divide mtDNA copies between the 2 mitochondria */
+		let new_partner = []
+		for (let dna of this.DNA){
+			if (this.C.random() < partition){
+				new_partner.push(dna)
+			} else {
+				this.DNA.push(dna)
+			}
+		}
+		partner.DNA = new_partner
+
+		/** stochastically divide complexes between mitochondria */
+		let new_partner_complexes = []
+		let new_complexes = []
+		for (let cplx of this.complexes){
+			if (this.C.random() < partition){
+				new_partner_complexes.push(cplx)
+				
+			} else {
+				new_complexes.push(cplx)
+			}
+		}
+		partner.complexes = new_partner_complexes
+		this.complexes = new_complexes
+
+		/** Update nb of complexes */
+		partner.recountComplexes()
+		this.recountComplexes()
+		// console.log("after division",this.oxphos_cplx,
+		// 	this.translate_cplx,
+		// 	this.replicate_cplx,
+		// 	this.total_oxphos)
+	}
+
+	/**
      * Checks against carrying capacity (defined by volume) whether the current product can be added
      * @returns {Boolean} - whether the addition is successful
      */

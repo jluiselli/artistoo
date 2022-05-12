@@ -48,6 +48,7 @@ let config = {
 		REPLICATE_TIME: 30,
 		fission_rate : 0.00002,
 		fusion_rate : 0.001,
+        sharing_rate : 0,
 		rep: 19,
 		rep2: 0,
 		evolvables: {"rep": {"sigma" : 0.5, "upper_bound":22}, 
@@ -55,6 +56,7 @@ let config = {
 							"host_division_volume":{"sigma" : 75, "lower_bound" : 2, "upper_bound":5000},
                             "fission_rate": {"sigma" : 0.000001}, 
 							"fusion_rate":{"sigma" : 0.00003},
+                            "sharing_rate":{"sigma" : 0},
 		 } ,
 
 		
@@ -201,6 +203,12 @@ function postMCSListener(){
                     this.gm.fuseCells(cid, fuser)
                 }
             }
+            if (this.C.random() <cell.cellParameter("sharing_rate") ){
+                let sharer = pickSharer(cell)
+                if (sharer !== undefined){
+                    this.gm.share(cid, sharer)
+                }
+            }
         }
         if (cell instanceof CPM.SuperCell){
             if (cell.vol > cell.cellParameter('host_division_volume')){
@@ -235,6 +243,27 @@ function postMCSListener(){
 }
 
 function pickFuser(cell){
+    let fusables = [], bordercumsum = [], totalborder = 0
+    let neighs = sim.C.getStat( CPM.CellNeighborList )[cell.id] //needs to be recomputed as neighbors change with fisfus :(
+    for (let neigh of Object.keys(neighs)){
+        fusable = sim.C.cells[neigh]
+        if (fusable instanceof CPM.Mitochondrion && cell.host == fusable.host){
+            if (!(sim.C.conf["SELECTIVE_FUSION"]) || (cell.oxphos >= cell.cellParameter('MITOPHAGY_THRESHOLD') && fusable.oxphos >= cell.cellParameter('MITOPHAGY_THRESHOLD'))){
+                totalborder += sim.C.getStat( CPM.CellNeighborList )[cell.id][fusable.id]
+                fusables.push(fusable.id)
+                bordercumsum.push(totalborder)
+            }
+        }
+    }
+    bordercumsum = bordercumsum.map(function(item) {return item/ totalborder})
+    if (fusables.length > 0){
+        let which = bordercumsum.findIndex(element => sim.C.random() < element )
+        return fusables[which]
+    }
+    return undefined
+}
+
+function pickSharer(cell){ // Same condition as fusion, but can be adjusted separately later
     let fusables = [], bordercumsum = [], totalborder = 0
     let neighs = sim.C.getStat( CPM.CellNeighborList )[cell.id] //needs to be recomputed as neighbors change with fisfus :(
     for (let neigh of Object.keys(neighs)){
