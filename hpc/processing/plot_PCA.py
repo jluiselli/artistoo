@@ -35,11 +35,10 @@ try:
     hosts=pd.read_csv(folder+'/hosts.csv', low_memory=False, sep=";", dtype=str)
 except:
     print("Data must have been aggregated with aggregate.py before")
+    sys.exit()
 
-hosts = hosts.drop([i for i in hosts.columns if i[:7]=='Unnamed'], axis=1)
-hosts = hosts.drop(['time of birth','good','bads','dna','type', 'fission events', 'fusion events'], axis=1)
-hosts = hosts.replace({'undefined':'NaN',"True":1,"False":0})
 hosts = hosts.astype({'time':float})
+
 
 if args.generation != -1:
     target_gen = float(args.generation)
@@ -49,10 +48,18 @@ else:
 hosts = hosts[hosts['time']==target_gen]
 hosts = hosts.drop(['time','id', 'parent','total_vol'], axis=1) #No NaN possibe and total_vol not always defined
 
+hosts = hosts.drop([i for i in hosts.columns if i[:7]=='Unnamed'], axis=1)
+hosts = hosts.drop(['time of birth','good','bads','dna','type', 'fission events', 'fusion events'], axis=1)
+hosts = hosts.replace({"True":1,"False":0})
+hosts = hosts.replace({"true":1,"false":0})
+hosts = hosts.sort_values(by=params)
+
 try:
     hosts = hosts.astype(float)
 except:
-    hosts = hosts.drop(["total_vol"],axis=1)
+    for col in hosts.columns:
+        print(col)
+        hosts = hosts.astype({col:float})
     hosts = hosts.astype(float)
 
 if hosts.empty:
@@ -75,6 +82,10 @@ usual_colors = ['tab:blue', 'tab:orange', 'tab:green','tab:purple','tab:red',
 
 
 X = hosts.drop([p for p in params], axis=1)
+try:
+    X = X.drop("seed", axis=1)
+except:
+    pass
 # parameters fixed by user prior the run should not be taken into account for the PCA
 Y = X.drop([col for col in X.columns if col[:4]=="evol"], axis=1) #drop explicitely evolving parameters
 pca = PCA(n_components=2)
@@ -83,13 +94,15 @@ components2 = pca.fit_transform(Y)
 
 ## actual stuff
 for p in params:
+    hosts = hosts.astype({p:float})
     if p != 'seed':
-        hosts[p]=hosts[p].astype(str) #no continuous colors wanted
-        fig = px.scatter(components, x=0, y=1, color=hosts[p], title='PCA_'+p)                        
+        # hosts[p]=hosts[p].astype(str) #no continuous colors wanted
+        hosts[p]=hosts[p].astype(float)
+        fig = px.scatter(components, x=0, y=1, color=hosts[p], title='PCA_'+p, opacity=0.5)                        
         fig.write_image(folder+'/processing/pca/PCA_'+p+'_gen_'+str(target_gen)+'.png')
         plt.close()
 
-        fig = px.scatter(components2, x=0, y=1, color=hosts[p], title='PCA_noeevparam_'+p)                        
+        fig = px.scatter(components2, x=0, y=1, color=hosts[p], title='PCA_noeevparam_'+p, opacity=0.5)                        
         fig.write_image(folder+'/processing/pca/PCA_noeevparam_'+p+'_gen_'+str(target_gen)+'.png')
         plt.close()
         if args.verbose:
@@ -99,26 +112,34 @@ for p in params:
             tmp = hosts[hosts[p]==unique_value]
             tmp = tmp.astype({'seed': str})
             X1 = tmp.drop([p for p in params], axis=1)
+            try:
+                X1 = X1.drop("seed", axis=1)
+            except:
+                pass
             Y1 = X1.drop([col for col in X.columns if col[:4]=="evol"], axis=1)
             components3 = pca.fit_transform(X1)
 
-            hosts = hosts.astype({p: str})
-            fig = px.scatter(components3, x=0, y=1, color=tmp['seed'], title='PCA_'+p+str(unique_value))                        
+            # hosts = hosts.astype({p: str})
+            fig = px.scatter(components3, x=0, y=1, color=tmp['seed'], title='PCA_'+p+str(unique_value), opacity=0.5)                        
             fig.write_image(folder+'/processing/pca/PCA_'+p+str(unique_value)+'_gen_'+str(target_gen)+'.png')
             plt.close()
 
             components4 = pca.fit_transform(Y1)
-            fig = px.scatter(components4, x=0, y=1, color=tmp['seed'], title='PCA_noeevparam_'+p+str(unique_value))                        
+            fig = px.scatter(components4, x=0, y=1, color=tmp['seed'], title='PCA_noeevparam_'+p+str(unique_value), opacity=0.5)                        
             fig.write_image(folder+'/processing/pca/PCA_noeevparam_'+p+str(unique_value)+'_gen_'+str(target_gen)+'.png')
             plt.close()
 
 evolvables = [col for col in hosts.columns if col[:4]=="evol"]
 for ev in evolvables:
     X = hosts.drop([p for p in params], axis=1)
+    try:
+        X = X.drop("seed", axis=1)
+    except:
+        pass
     # parameters fixed by user prior the run should not be taken into account for the PCA
     Y = X.drop([col for col in X.columns if col[:4]=="evol"], axis=1) #drop explicitely evolving parameters
 
     components = pca.fit_transform(Y)
-    fig = px.scatter(components, x=0, y=1, color=hosts[ev], title='PCA_noeevparam_'+ev)                        
+    fig = px.scatter(components, x=0, y=1, color=hosts[ev], title='PCA_noeevparam_'+ev, opacity=0.5)                        
     fig.write_image(folder+'/processing/pca/PCA_noeevparam_'+ev+'_gen_'+str(target_gen)+'.png')
     plt.close()

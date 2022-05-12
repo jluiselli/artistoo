@@ -35,7 +35,10 @@ try:
     try:
         hosts = hosts.drop(['time of birth','good','bads','dna','type','total_vol'], axis=1)
         hosts = hosts.drop([i for i in hosts.columns if i[:7]=='Unnamed'], axis=1)
+<<<<<<< HEAD
         hosts = hosts.drop(['genes'], axis=1)
+=======
+>>>>>>> development
     except:
         pass
     if args.competition:
@@ -46,6 +49,7 @@ try:
             hosts[new_name1] = [i[0] for i in hosts[ev]]
             hosts[new_name2] = [i[1] for i in hosts[ev]]
             hosts = hosts.drop([ev], axis=1)
+<<<<<<< HEAD
     if args.verbose:
         print('now sampling the df')
     hosts = hosts.sample(frac=args.fraction)
@@ -54,6 +58,21 @@ try:
     if args.verbose:
         print('all set to convert to float')
     hosts = hosts.astype(float)
+=======
+    if args.fraction != 1:
+        if args.verbose:
+            print('now sampling the df')
+        hosts = hosts.sample(frac=args.fraction)
+
+    hosts = hosts.replace({'undefined':'NaN',"true":1,"false":0, "True":1, "False":0})
+    if args.verbose:
+        print('all set to convert to float')
+    # for col in hosts.columns:
+    #     print(col)
+    #     hosts = hosts.astype({col:float})
+    hosts = hosts.astype(float)
+    hosts = hosts.sort_values(by=params)
+>>>>>>> development
     
 except:
     print("Data must have been aggregated with aggregate.py before plotting")
@@ -81,7 +100,11 @@ else:
 
 
 try:
+<<<<<<< HEAD
     hosts['growth_rate']=hosts['growth_rate'].replace({15:1.5, 5:0.5})
+=======
+    hosts['growth_rate']=hosts['growth_rate'].replace({15:1.5, 5:0.5,20:2.0,25:2.5})
+>>>>>>> development
 except:
     pass
 try:
@@ -101,6 +124,7 @@ else:
     interest_params += [i for i in hosts.columns if i[:10]=='evolvables']
 
 # interest_params = ["evolvables_fusion_rate"] #Tmp quick plot
+interest_params+=['fission events', 'fusion events']
 
 hosts = hosts.astype({'seed':str})
 minimums, maximums = {}, {}
@@ -141,8 +165,11 @@ for c in combinations:
             print(ev)
         fig, ax = plt.subplots(1, 1, figsize=(15,10))
         sns.scatterplot(x='time', y=ev, data=tmp, ax=ax, hue="seed")
-        # , alpha=alpha)            
-        ax.set_ylim(minimums[ev], maximums[ev])
+        # , alpha=alpha)
+        try:            
+            ax.set_ylim(minimums[ev], maximums[ev])
+        except:
+            pass
         ax.set_ylabel(ev)
         ax.set_xlabel('time')
         ax.legend()
@@ -176,15 +203,17 @@ for k in params: # different values given at the beginning of the simulation
         # fig.savefig(folder+'/processing/hosts/'+ev+'_time_'+k+'.png',dpi=600)
         # plt.close(fig)
 
-        fig, ax = plt.subplots(2, 1, figsize=(15,15))
+        fig, ax = plt.subplots(1, 1, figsize=(15,10))
         for unique_value in hosts[k].unique():
             tmp = hosts[hosts[k]==unique_value]
-            X = [np.median(tmp[tmp['time']==t][ev]) for t in tmp['time'].unique()]
             Z = [np.mean(tmp[tmp['time']==t][ev]) for t in tmp['time'].unique()]
             lab = str(k)+' '+str(unique_value)
             ax.scatter(tmp['time'].unique(), Z, label=lab, alpha=.6)
         ax.set_ylabel(ev)
-        ax.set_ylim(minimums[ev], maximums[ev])
+        try:
+            ax.set_ylim(minimums[ev], maximums[ev])
+        except:
+            pass
         ax.set_xlabel('time')
         ax.set_title("Mean "+ev+" over time for different "+k)
         ax.legend()
@@ -213,7 +242,7 @@ for k in params: # different values given at the beginning of the simulation
                     # fig.savefig(folder+'/processing/hosts/'+ev+'_time_'+other_param+"_"+str(unique_value)+'.png',dpi=600)
                     # plt.close(fig)
                 
-                    fig, ax = plt.subplots(2, 1, figsize=(15,15))
+                    fig, ax = plt.subplots(1, 1, figsize=(15,10))
                     for value in hosts[other_param].unique():
                         tmp2 = tmp[tmp[other_param]==value]
                         if tmp2.empty:
@@ -222,7 +251,10 @@ for k in params: # different values given at the beginning of the simulation
                         lab = str(other_param)+' '+str(value)
                         ax.scatter(tmp2['time'].unique(), Z, label=lab, alpha=.6)
                     ax.legend()
-                    ax.set_ylim(minimums[ev], maximums[ev])
+                    try:
+                        ax.set_ylim(minimums[ev], maximums[ev])
+                    except:
+                        pass
                     ax.set_ylabel(ev)
                     ax.set_xlabel('time')
                     ax.set_title("Mean "+ev+" over time for different "+other_param+"\n"+k+" is "+str(unique_value))

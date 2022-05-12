@@ -117,7 +117,7 @@ for subfolder in subfolders:
 
             Mean = [np.mean(lineage[lineage['time']==t][col]) for t in lineage['time'].unique()]
 
-            plt.plot(lineage['time'].unique(), Mean, color='tab:red')  
+            # plt.plot(lineage['time'].unique(), Mean, color='tab:red')  
             plt.plot(pd.DataFrame(lineage['time'].unique()).rolling(50).mean(),
                 pd.DataFrame(Mean).rolling(50).mean(),
                 color='tab:orange', linewidth=3)
@@ -173,4 +173,21 @@ for subfolder in subfolders:
 
     fig.tight_layout()
     fig.savefig(folder+'/processing/'+subfolder+'/'+col+'_lineage.png')
+    plt.close(fig)
+
+    fig, ax = plt.subplots(1, 1, figsize=(15,10))
+    mit_vol = [np.sum(lineage[lineage['time']==t]['vol_mit']) for t in lineage['time'].unique()]
+    plt.scatter(lineage['time'].unique(), mit_vol)
+  
+    try:
+        ax.set_ylim(0.99*min(mit_vol), 1.01*max(mit_vol))
+    except:
+        pass
+    ax.set_ylabel(col)
+    ax.set_yscale('log')
+    ax.set_xlabel('time')
+    ax.set_title(col+" over time for the lineage")
+
+    fig.tight_layout()
+    fig.savefig(folder+'/processing/'+subfolder+'/'+col+'_log_lineage.png')
     plt.close(fig)

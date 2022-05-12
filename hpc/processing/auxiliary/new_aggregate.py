@@ -34,7 +34,7 @@ for f in [seed_folder for seed_folder in os.listdir(folder) if seed_folder[:4]==
     i = 0
     while i < len(k):
         try:
-            if k[i][-2:]=='1e' or k[i][-2:]=='5e': #For degenerated cases of rates
+            if k[i][-2:]=='1e' or k[i][-2:]=='5e' or k[i][-2:]=='2e': #For degenerated cases of rates
                 k[i] = k[i]+ '-' + k[i+1]
                 if i < len(k)-2:
                     k = k[:i+1]+k[i+2:]
@@ -64,9 +64,9 @@ for f in [seed_folder for seed_folder in os.listdir(folder) if seed_folder[:4]==
         for k in params:
             hosts_tmp[k] = params[k]
             mit_tmp[k] = params[k]
-            deaths_mit_tmp = params[k]
-            deaths_host_tmp = params[k]
-            divisions_tmp = params[k]
+            deaths_mit_tmp[k] = params[k]
+            deaths_host_tmp[k] = params[k]
+            divisions_tmp[k] = params[k]
 
         hosts = pd.concat([hosts, hosts_tmp], sort=False)
         mit = pd.concat([mit, mit_tmp], sort=False)

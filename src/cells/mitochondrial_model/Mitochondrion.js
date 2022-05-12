@@ -146,6 +146,16 @@ class Mitochondrion extends SubCell {
 		return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v )
 	}
 
+	/** Get standard Normal variate from univariate using Box-Muller transform.
+	 *  Code edited from https://stackoverflow.com/questions/25582882/javascript-math-random-normal-distribution-gaussian-bell-curve
+	 */ 
+	rand_normal() {
+		let u = 0, v = 0
+		while(u === 0) u = this.C.random() //Converting [0,1) to (0,1)
+		while(v === 0) v = this.C.random()
+		return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v )
+	}
+
 	/**
      * Birth call on new mitochondrion, handles stochastic division of products and 
      * mtDNA copies. 
@@ -196,7 +206,7 @@ class Mitochondrion extends SubCell {
 
 		/** Do mutation steps on evolvables */
 		for (const evolvable in this.conf["evolvables_mit"]){
-			this[evolvable] = parent.cellParameter(evolvable)
+			this[evolvable] = parent[evolvable]
 			this[evolvable] += this.conf["evolvables_mit"][evolvable]["sigma"] * this.rand_normal()
 			if (this.conf["evolvables_mit"][evolvable]["lower_bound"] !== undefined){
 				this[evolvable] = Math.max(this[evolvable], this.conf["evolvables_mit"][evolvable]["lower_bound"])
@@ -346,6 +356,9 @@ class Mitochondrion extends SubCell {
 		for (let dna of this.DNA.values()){
 			dna.mutate(this.cellParameter("MTDNA_MUT_ROS") * this.ros)
 		}
+		let mutated_prot = this.products.mutate(Math.min(0.9999,this.cellParameter("PROT_MUT_ROS") * this.ros))
+		this.products.remove(mutated_prot)
+		this.bad_products.add(mutated_prot)
 	}
 
 	/**

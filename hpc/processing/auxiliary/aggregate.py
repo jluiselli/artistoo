@@ -52,13 +52,19 @@ for f in os.listdir(folder):
         
         hosts = pd.concat([hosts, hosts_tmp], sort=False)
         mit = pd.concat([mit, mit_tmp], sort=False)
+        if is_mit:
+            mit.to_csv(folder+'/mit.csv')
     
     except:
         pass
 
+try:
+    for key in hosts.iloc[0]['evolvables'].keys():
+        hosts[str(key)] = [hosts.iloc[i]['evolvables'][str(key)] for i in range(len(hosts))]
+except:
+    pass
 
-for key in hosts.iloc[0]['evolvables'].keys():
-    hosts[str(key)] = [hosts.iloc[i]['evolvables'][str(key)] for i in range(len(hosts))]
-
-hosts.to_csv(folder+'/hosts.csv')
-mit.to_csv(folder+'/mit.csv')
+if is_mit:
+    mit.to_csv(folder+'/mit.csv',sep=";")
+else:
+    hosts.to_csv(folder+'/hosts.csv',sep=";")

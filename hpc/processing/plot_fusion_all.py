@@ -33,16 +33,15 @@ if args.competition:
     sys.exit()
 
 
-# try:
 if os.path.exists(folder+'/total_df.csv'):
     print("retrieving existing df")
-    df = pd.read_csv(folder+'/total_df.csv', sep=';')
+    df = pd.read_csv(folder+'/total_df.csv', sep=';', low_memory=False)
 else:
     print("merging dfs")
     hosts=pd.read_csv(folder+'/hosts.csv', low_memory=False, sep=";", dtype=str)
     try:
-        hosts = hosts.drop(['time of birth','good','bads','dna','type', 'Unnamed: 20'], axis=1)
-        hosts = hosts.drop(['evolvables', 'subcells'], axis=1)
+        hosts = hosts.drop(['time of birth','good','bads','dna','type'], axis=1)
+        hosts = hosts.drop([i for i in hosts.columns if i[:7]=='Unnamed'], axis=1)
     except:
         pass
     if args.verbose:
@@ -64,9 +63,6 @@ else:
     if args.verbose:
         print(df)
     df.to_csv(folder+'/total_df.csv',sep=";")
-# except:
-#     print("Data must have been aggregated with aggregate.py before")
-#     exit
 
 
 df['time']=df['time'].astype(float)
@@ -141,7 +137,10 @@ for k in params:
                 data=df, alpha = 0.1, s=20, ax=ax)
 
             ax.set_ylim(min(df['fusion_rate']), max(df['fusion_rate']))
-            ax.set_xlim(min(df[val]), max(df[val]))
+            try:
+                ax.set_xlim(min(df[val]), max(df[val]))
+            except:
+                pass
         
             ax.set_ylabel('fusion_rate')
             ax.set_xlabel(val)
@@ -157,7 +156,7 @@ for k in params:
             ax.legend()
             ax.set_title("fusion rate against "+val+" for different "+k)
             fig.tight_layout()
-            fig.savefig(folder+'/processing/fusion/'+val+'_'+k+'.png',dpi=600)
+            fig.savefig(folder+'/processing/fusion/'+val+'_'+k+'.png')
             plt.close(fig)
             if args.verbose:
                 print(k,val,'done')
@@ -174,7 +173,10 @@ for k in params:
                         sns.scatterplot(x=val, y='fusion_rate', hue=other_param,
                             alpha=0.1, s=20, ax=ax, data=tmp
                             )
-                        ax.set_xlim(min(df[val]), max(df[val]))
+                        try:
+                            ax.set_xlim(min(df[val]), max(df[val]))
+                        except:
+                            pass
                         ax.set_ylim(min(df['fusion_rate']), max(df['fusion_rate']))
                         ax.set_ylabel('fusion_rate')
                         ax.set_xlabel(val)
@@ -191,7 +193,7 @@ for k in params:
                         ax.set_title("fusion rate against "+val+" with "+k+"="+str(unique_value))
 
                         fig.tight_layout()
-                        fig.savefig(folder+'/processing/fusion/'+val+'_'+k+'_'+str(unique_value)+'.png',dpi=600)
+                        fig.savefig(folder+'/processing/fusion/'+val+'_'+k+'_'+str(unique_value)+'.png')
                         plt.close(fig)
             
             if args.verbose:
