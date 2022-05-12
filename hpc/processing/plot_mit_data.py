@@ -48,6 +48,7 @@ try:
         mit = mit.astype({col:float})
     mit = mit.astype(float)
     mit = mit.sample(frac=args.fraction)
+    mit = mit.sort_values(by=params)
     if args.verbose:
         print(mit.columns)
 except:
@@ -130,6 +131,7 @@ for c in combinations:
             sns.scatterplot(x='time', y=ev, data=tmp, ax=ax, hue="seed")
             ax.set_ylim(minimums[ev], maximums[ev])
             ax.set_ylabel(ev)
+            ax.set_yscale('log')
             ax.set_xlabel('time')
             ax.legend()
             ax.set_title(ev+" over time "+str(c))
@@ -145,7 +147,10 @@ for c in combinations:
                 lab = 'seed '+str(seed)
                 ax.scatter(tmp2['time'].unique(), Z, label=lab, alpha=.6)
         ax.set_ylabel(ev)
-        # ax.set_ylim(minimums[ev], maximums[ev])
+        try:
+            ax.set_ylim(minimums[ev], maximums[ev])
+        except:
+            pass
         ax.set_xlabel('time')
         ax.set_title("Mean "+ev+" over time for "+str(c))
         ax.legend()
@@ -174,12 +179,36 @@ for k in params: # different values given at the beginning of the simulation
             lab = str(k)+' '+str(unique_value)
             ax.scatter(tmp['time'].unique(), Z, label=lab, alpha=.6)
         ax.set_ylabel(ev)
-        # ax.set_ylim(minimums[ev], maximums[ev])
+        try:
+            ax.set_ylim(minimums[ev], maximums[ev])
+        except:
+            pass
         ax.set_xlabel('time')
         ax.legend()
         ax.set_title("Mean "+ev+" over time for different "+k)
         fig.tight_layout()
         fig.savefig(folder+'/processing/mit/'+ev+'_time_'+k+'_summarize.png')
+        plt.close(fig)
+
+        fig, ax = plt.subplots(1, 1, figsize=(15,10))
+        for unique_value in mit[k].unique():
+            tmp = mit[mit[k]==unique_value]
+            if tmp.empty:
+                continue
+            Z = [np.mean(tmp[tmp['time']==t][ev]) for t in tmp['time'].unique()]
+            lab = str(k)+' '+str(unique_value)
+            ax.scatter(tmp['time'].unique(), Z, label=lab, alpha=.6)
+        ax.set_ylabel(ev)
+        try:
+            ax.set_ylim(minimums[ev], maximums[ev])
+        except:
+            pass
+        ax.set_xlabel('time')
+        ax.set_yscale('log')
+        ax.legend()
+        ax.set_title("Mean "+ev+" over time for different "+k)
+        fig.tight_layout()
+        fig.savefig(folder+'/processing/mit/'+ev+'_time_'+k+'_summarize_log.png')
         plt.close(fig)
 
         if args.verbose:
@@ -201,12 +230,38 @@ for k in params: # different values given at the beginning of the simulation
                         lab = str(other_param)+' '+str(value)
                         ax.scatter(tmp2['time'].unique(), Z, label=lab, alpha=.6)
                     ax.set_ylabel(ev)
-                    # ax.set_ylim(minimums[ev], maximums[ev])
+                    try:
+                        ax.set_ylim(minimums[ev], maximums[ev])
+                    except:
+                        pass
                     ax.legend()
                     ax.set_xlabel('time')
                     ax.set_title("Mean "+ev+" over time for different "+other_param+"\n"+k+" is "+str(unique_value))
                     fig.tight_layout()
                     fig.savefig(folder+'/processing/mit/'+ev+'_time_'+k+'-'+str(unique_value)+'_'+other_param+'_summarize.png')
                     plt.close(fig)
+
+                    
+                    fig, ax = plt.subplots(1, 1, figsize=(15,10))
+                    for value in mit[other_param].unique():
+                        tmp2 = tmp[tmp[other_param]==value]
+                        if tmp2.empty:
+                            continue
+                        Z = [np.mean(tmp2[tmp2['time']==t][ev]) for t in tmp2['time'].unique()]
+                        lab = str(other_param)+' '+str(value)
+                        ax.scatter(tmp2['time'].unique(), Z, label=lab, alpha=.6)
+                    ax.set_ylabel(ev)
+                    try:
+                        ax.set_ylim(minimums[ev], maximums[ev])
+                    except:
+                        pass
+                    ax.legend()
+                    ax.set_yscale('log')
+                    ax.set_xlabel('time')
+                    ax.set_title("Mean "+ev+" over time for different "+other_param+"\n"+k+" is "+str(unique_value))
+                    fig.tight_layout()
+                    fig.savefig(folder+'/processing/mit/'+ev+'_time_'+k+'-'+str(unique_value)+'_'+other_param+'_summarize_log.png')
+                    plt.close(fig)
+
 
 

@@ -68,7 +68,7 @@ try:
 except:
     pass
 try:
-    df['growth_rate']=df['growth_rate'].replace({'15':'1.5', '05':'0.5'})
+    df['growth_rate']=df['growth_rate'].replace({'15':'1.5', '05':'0.5', '20':'2.0','25':'2.5'})
 except:
     pass
 
@@ -153,36 +153,42 @@ else:
                 if args.verbose:
                     print(k, other_param)
                 if k!=other_param and k!='seed':
-                    for val in df.columns:
-                        if val not in non_plottable:
-                            if args.verbose:
-                                print(k, other_param, val)
-                            fig, ax = plt.subplots(1, 1, figsize=(15,10))
-                            try:
-                                sns.violinplot(x=other_param, y=val, inner=None, data=tmp, ax=ax,
-                                    color='.9')
-                                sns.stripplot(x=other_param, y=val, hue="seed", data=tmp, ax=ax,
-                                    )
-                                ax.set_title(str(folder)+'\n'+val+" at time "+str(target_gen)+" "+str(k)+" "+str(unique_value))
-                                ax.set_xlabel(other_param)
-                                if val=='evolvables_fusion_rate':
-                                    ax.set_ylim(-1e-3, 1e-3)
-                                elif val=='evolvables_host_division_volume':
-                                    ax.set_ylim(0,5000)
-                                elif val=='evolvables_fission_rate':
-                                    ax.set_ylim(-1e-5,5.5e-5)
-                                elif val=='evolvables_rep':
-                                    ax.set_ylim(5,35)
-                                elif val=='evolvables_HOST_V_PER_OXPHOS':
-                                    ax.set_ylim(-1e-5,1)
-                                else:
-                                    ax.set_ylim(min(df[val]), max(df[val]))
-                                fig.tight_layout()
-                                fig.savefig(folder+'/processing/end_values/'+val+'_'+k+"_"+str(unique_value)+'_'+other_param+'_'+'_time_'+str(target_gen)+'.png')
-                            except:
-                                print("Failed for ",k, unique_value, other_param, val)
-                                pass
-                            plt.close(fig)
+                    for second_unique_value in tmp[other_param].unique():
+                        tmp2 = tmp[tmp[other_param]==second_unique_value]
+                        # for plotted_param in params:
+                        for plotted_param in ['rep_genes']:
+                            if plotted_param != other_param and plotted_param != k and plotted_param !='seed':
+                                for val in df.columns:
+                                    if val not in non_plottable:
+                                        if args.verbose:
+                                            print(k, other_param, val)
+                                        fig, ax = plt.subplots(1, 1, figsize=(15,10))
+                                        try:
+                                            sns.violinplot(x=plotted_param, y=val, inner=None, data=tmp2, ax=ax,
+                                                color='.9')
+                                            sns.stripplot(x=plotted_param, y=val, hue="seed", data=tmp2, ax=ax,
+                                                )
+                                            ax.set_title(str(folder)+'\n'+val+" at time "+str(target_gen)+" "+str(k)+" "+str(unique_value)+" "+
+                                                str(other_param)+" "+str(second_unique_value))
+                                            ax.set_xlabel(plotted_param)
+                                            if val=='evolvables_fusion_rate':
+                                                ax.set_ylim(-1e-3, 1e-3)
+                                            elif val=='evolvables_host_division_volume':
+                                                ax.set_ylim(0,5000)
+                                            elif val=='evolvables_fission_rate':
+                                                ax.set_ylim(-1e-5,5.5e-5)
+                                            elif val=='evolvables_rep':
+                                                ax.set_ylim(5,35)
+                                            elif val=='evolvables_HOST_V_PER_OXPHOS':
+                                                ax.set_ylim(-1e-5,1)
+                                            else:
+                                                ax.set_ylim(min(df[val]), max(df[val]))
+                                            fig.tight_layout()
+                                            fig.savefig(folder+'/processing/end_values/'+val+'_'+k+"_"+str(unique_value)+'_'+other_param+'_'+str(second_unique_value)+'_time_'+str(target_gen)+'.png')
+                                        except:
+                                            print("Failed for ",k, unique_value, other_param, val)
+                                            pass
+                                        plt.close(fig)
 
 
                 

@@ -59,6 +59,7 @@ df = df.replace({'nan':0,'NaN':0,'undefined':0,"True":1,"False":0}) #undefined i
 
 
 df = df.astype(float)
+df = df.sort_values(by=params)
 
 if df.empty:
     print("empty df ! Are there data at this generation ?")
@@ -77,6 +78,10 @@ if not os.path.isdir(folder+'/processing/pca_mit/'):
 
 
 X = df.drop([p for p in params], axis=1)
+try:
+    X = X.drop('seed',axis=1)
+except:
+    pass
 # parameters fixed by user prior the run should not be taken into account for the PCA
 Y = X.drop([col for col in X.columns if col[:4]=="evol"], axis=1) #drop explicitely evolving parameters
 pca = PCA(n_components=2)
@@ -87,11 +92,12 @@ components2 = pca.fit_transform(Y)
 for p in params:
     if p != 'seed':
         df[p]=df[p].astype(str) #no continuous colors wanted
-        fig = px.scatter(components, x=0, y=1, color=df[p], title='PCA_'+p)                        
+        df[p]=df[p].astype(float)
+        fig = px.scatter(components, x=0, y=1, color=df[p], title='PCA_'+p, opacity=0.4)                        
         fig.write_image(folder+'/processing/pca_mit/PCA_'+p+'_gen_'+str(target_gen)+'.png')
         plt.close()
 
-        fig = px.scatter(components2, x=0, y=1, color=df[p], title='PCA_noeevparam_'+p)                        
+        fig = px.scatter(components2, x=0, y=1, color=df[p], title='PCA_noeevparam_'+p, opacity=0.4)                        
         fig.write_image(folder+'/processing/pca_mit/PCA_noeevparam_'+p+'_gen_'+str(target_gen)+'.png')
         plt.close()
         if args.verbose:
@@ -101,6 +107,10 @@ for p in params:
             tmp = df[df[p]==unique_value]
             tmp = tmp.astype({'seed': str})
             X1 = tmp.drop([p for p in params], axis=1)
+            try:
+                X1 = X1.drop("seed", axis=1)
+            except:
+                pass
             Y1 = X1.drop([col for col in X.columns if col[:4]=="evol"], axis=1)
             # components3 = pca.fit_transform(X1)
 
@@ -110,17 +120,21 @@ for p in params:
             # plt.close()
 
             components4 = pca.fit_transform(Y1)
-            fig = px.scatter(components4, x=0, y=1, color=tmp['seed'], title='PCA_noeevparam_'+p+str(unique_value))                        
+            fig = px.scatter(components4, x=0, y=1, color=tmp['seed'], title='PCA_noeevparam_'+p+str(unique_value), opacity=0.4)                        
             fig.write_image(folder+'/processing/pca_mit/PCA_noeevparam_'+p+str(unique_value)+'_gen_'+str(target_gen)+'.png')
             plt.close()
 
 evolvables = [col for col in df.columns if col[:4]=="evol"]
 for ev in evolvables:
     X = df.drop([p for p in params], axis=1)
+    try:
+        X = X.drop("seed", axis=1)
+    except:
+        pass
     # parameters fixed by user prior the run should not be taken into account for the PCA
     Y = X.drop([col for col in X.columns if col[:4]=="evol"], axis=1) #drop explicitely evolving parameters
 
     components = pca.fit_transform(Y)
-    fig = px.scatter(components, x=0, y=1, color=df[ev], title='PCA_noeevparam_'+ev)                        
+    fig = px.scatter(components, x=0, y=1, color=df[ev], title='PCA_noeevparam_'+ev, opacity=0.4)                        
     fig.write_image(folder+'/processing/pca_mit/PCA_noeevparam_'+ev+'_gen_'+str(target_gen)+'.png')
     plt.close()
