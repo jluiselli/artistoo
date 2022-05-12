@@ -43,11 +43,6 @@ class Mitochondrion extends SubCell {
      * Any parameters can also be controlled by the HostCell through 'evolvables' - but this still requires an 
      * initial value to be present in the conf object
 	 * 
-	 * @param {Object} [conf.evolvables_mit] - contains objects with keys of parameters that
-	 * can evolve, needs to contain conf.evolvables_mit.NAME.sigma - the standard deviation
-	 * of the evolving step. Can contain (conf.evolvables_mit.NAME.-) upper_bound and lower_bound
-	 * which are hard limits to evolutions. Initial value of the evolvable is taken as the conf.NAME
-	 * parameter
      */
 	constructor (conf, kind, id, C) {
 		super(conf, kind, id, C)
@@ -115,12 +110,6 @@ class Mitochondrion extends SubCell {
 		this.replicate_cplx = 0 // Number of viable replication complexes
 		this.translate_cplx = 0 // Number of viable translation complexes
 		this.makeAssemblies()
-		 * sets evolvable parameters as subcell-specific, so they
-		 * can accurately be adjusted later
-		 */
-		for (let evolvable in conf["evolvables_mit"]){
-			this[evolvable] = conf[evolvable]
-		}
 		
 	}
 	
@@ -204,17 +193,6 @@ class Mitochondrion extends SubCell {
 		this.makeAssemblies()
 		parent.makeAssemblies()
 
-		/** Do mutation steps on evolvables */
-		for (const evolvable in this.conf["evolvables_mit"]){
-			this[evolvable] = parent[evolvable]
-			this[evolvable] += this.conf["evolvables_mit"][evolvable]["sigma"] * this.rand_normal()
-			if (this.conf["evolvables_mit"][evolvable]["lower_bound"] !== undefined){
-				this[evolvable] = Math.max(this[evolvable], this.conf["evolvables_mit"][evolvable]["lower_bound"])
-			}
-			if (this.conf["evolvables_mit"][evolvable]["upper_bound"] !== undefined){
-				this[evolvable] = Math.min(this[evolvable], this.conf["evolvables_mit"][evolvable]["upper_bound"])
-			}
-		}
 	}
 
 	/**
@@ -687,10 +665,6 @@ class Mitochondrion extends SubCell {
 		}
 		mito["sum dna"] = sumdna.slice(0,10)
 		mito["unmut"] = this.unmutated/this.DNA.length
-		for (const evolvable in this.conf.evolvables_mit){
-			let str = "evolvables_" + evolvable
-			mito[str] = this[evolvable]
-		}
 		return mito
 	}
     
@@ -714,7 +688,7 @@ class Mitochondrion extends SubCell {
 		}
 		let deathstr = ""
 		for (let key in dct){
-			if (key == "evolvables" || key=="evolvables_mit"){
+			if (key == "evolvables"){
 				for (let key2 in dct[key]){
 					deathstr += dct[key][key2]+";"
 				}
