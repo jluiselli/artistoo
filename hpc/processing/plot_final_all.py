@@ -71,6 +71,10 @@ try:
     df['growth_rate']=df['growth_rate'].replace({'15':'1.5', '05':'0.5', '20':'2.0','25':'2.5'})
 except:
     pass
+try:
+    df['mit_t']=df['mit_t'].replace({'15':'1.5', '05':'0.5', '20':'2.0','25':'2.5'})
+except:
+    pass
 
 df = df.replace({'undefined':"NaN", "True":1,"False":0, "true":1, "false":0})
 df = df.astype(float)
@@ -91,7 +95,18 @@ if not os.path.isdir(folder+'/processing/end_values/'):
 
 
 usual_colors = ['tab:blue', 'tab:orange', 'tab:green','tab:purple','tab:red',
-'tab:pink','tab:brown'] 
+'tab:pink','tab:brown', 'tab:gray','tab:olive','tab:cyan'] 
+cols = {}
+i=0
+for s in df['seed'].unique():
+    cols[s] = usual_colors[i]
+    i+=1
+
+for s in df['seed'].unique():
+    cols[s] = 'C'+str(i)
+    i+=1
+
+
 
 
 evolvables = [i for i in df.columns if i[:10]=='evolvables']
@@ -102,7 +117,7 @@ df = df.rename(columns = {'vol': 'vol_'+args.type})
 
 non_plottable = [i for i in params]
 non_plottable += ['time', 'id', 'V', 'seed', 'time of birth',
-    'fission events', 'fusion events', 'repliosomes', 'parent', 'genes']
+    'repliosomes', 'parent', 'genes']
 
 
 if len(params)==1:
@@ -125,7 +140,7 @@ if len(params)==1:
                     ax.set_title(str(folder)+'\n'+val+" at time "+str(target_gen))
                     ax.set_xlabel(k)
                     if val=='evolvables_fusion_rate':
-                        ax.set_ylim(-1.2e-3, 1.2e-3)
+                        ax.set_ylim(-1e-3, 1.5e-3)
                     elif val=='evolvables_host_division_volume':
                         ax.set_ylim(0,5000)
                     elif val=='evolvables_fission_rate':
@@ -143,6 +158,72 @@ if len(params)==1:
                     pass
                 plt.close(fig)
 
+elif len(params)==2:
+    print(df)
+    for k in params: # different values given at the beginning of the simulation
+        print(k)
+        for unique_value in df[k].unique():
+            tmp = df[df[k]==unique_value]
+            for other_param in params:
+                if args.verbose:
+                    print(k, other_param)
+                if k!=other_param and k!='seed':
+                    for val in df.columns:
+                        if val not in non_plottable:
+                            if args.verbose:
+                                print(k, other_param, val)
+                            fig, ax = plt.subplots(1, 1, figsize=(15,10))
+                            try:
+                                sns.violinplot(x=other_param, y=val, inner=None, data=tmp, ax=ax,
+                                    color='.9')
+                                sns.stripplot(x=other_param, y=val, hue="seed", data=tmp, ax=ax,
+                                    )
+                                ax.set_title(str(folder)+'\n'+val+" at time "+str(target_gen)+" "+str(k)+" "+str(unique_value)+" "+
+                                    str(other_param))
+                                ax.set_xlabel(other_param)
+                                if val=='evolvables_fusion_rate':
+                                    ax.set_ylim(-1e-3, 1.5e-3)
+                                elif val=='evolvables_host_division_volume':
+                                    ax.set_ylim(0,5000)
+                                elif val=='evolvables_fission_rate':
+                                    ax.set_ylim(-1e-5,5.5e-5)
+                                elif val=='evolvables_rep':
+                                    ax.set_ylim(5,35)
+                                elif val=='evolvables_HOST_V_PER_OXPHOS':
+                                    ax.set_ylim(-1e-5,1)
+                                else:
+                                    ax.set_ylim(min(df[val]), max(df[val]))
+                                fig.tight_layout()
+                                fig.savefig(folder+'/processing/end_values/'+val+'_'+k+"_"+str(unique_value)+'_'+other_param+'_time_'+str(target_gen)+'.png')
+                            except:
+                                print("Failed for ",k, unique_value, other_param, val)
+                                pass
+                            plt.close(fig)
+
+                    fig, ax = plt.subplots(1, 1, figsize=(15,10))
+                    for unique_param2 in np.sort(tmp[other_param].unique()):
+                        tmp2 =  tmp[tmp[other_param]==unique_param2]
+                        i=0
+                        for s in tmp2['seed'].unique():
+                            ax.scatter(str(unique_param2), len(tmp2[tmp2['seed']==s]),
+                            c=cols[s], label=s, s=100)
+                            i+=1
+                    ax.set_title(str(folder)+"\nNb of cells at time "+str(target_gen)+" "+str(k)+" "+str(unique_value))
+                    ax.set_xlabel(other_param)
+                    ax.set_ylim(0,100)
+                    patchList = []
+                    for key in cols:
+                        data_key = mpatches.Patch(color=cols[key], label=key)
+                        patchList.append(data_key)
+                    ax.legend(handles=patchList)
+                    fig.tight_layout()
+                    fig.savefig(folder+'/processing/end_values/ncells_'+k+"_"+str(unique_value)+'_'+other_param+'_time_'+str(target_gen)+'.png')
+                    plt.close(fig)
+                                
+
+    
+
+
 else:
     print(df)
     for k in params: # different values given at the beginning of the simulation
@@ -154,9 +235,10 @@ else:
                     print(k, other_param)
                 if k!=other_param and k!='seed':
                     for second_unique_value in tmp[other_param].unique():
-                        tmp2 = tmp[tmp[other_param]==second_unique_value]
+                        tmp2 = tmp[tmp[other_param]==second_unique_value] #2nd depth : isolate with 2 unique parameters
+                        # Should be made tuneable to specify level to use
                         # for plotted_param in params:
-                        for plotted_param in ['rep_genes']:
+                        for plotted_param in ['rep_genes']: 
                             if plotted_param != other_param and plotted_param != k and plotted_param !='seed':
                                 for val in df.columns:
                                     if val not in non_plottable:
@@ -172,7 +254,7 @@ else:
                                                 str(other_param)+" "+str(second_unique_value))
                                             ax.set_xlabel(plotted_param)
                                             if val=='evolvables_fusion_rate':
-                                                ax.set_ylim(-1e-3, 1e-3)
+                                                ax.set_ylim(-1e-3, 1.5e-3)
                                             elif val=='evolvables_host_division_volume':
                                                 ax.set_ylim(0,5000)
                                             elif val=='evolvables_fission_rate':
@@ -189,6 +271,29 @@ else:
                                             print("Failed for ",k, unique_value, other_param, val)
                                             pass
                                         plt.close(fig)
+
+                                fig, ax = plt.subplots(1, 1, figsize=(15,10))
+                                for unique_param3 in np.sort(tmp2[plotted_param].unique()):
+                                    tmp3 =  tmp2[tmp2[plotted_param]==unique_param3]
+                                    i=0
+                                    for s in tmp3['seed'].unique():
+                                        ax.scatter(str(unique_param3), len(tmp3[tmp3['seed']==s]),
+                                        c=cols[s], label=s, s=100)
+                                        i+=1
+                                ax.set_title(str(folder)+"\nNb of cells at time "+str(target_gen)+" "+str(k)+" "+str(unique_value)+" "+
+                                            str(other_param)+" "+str(second_unique_value))
+                                ax.set_xlabel(plotted_param)
+                                ax.set_ylim(0,100)
+                                patchList = []
+                                for key in cols:
+                                    data_key = mpatches.Patch(color=cols[key], label=key)
+                                    patchList.append(data_key)
+                                ax.legend(handles=patchList)
+                                fig.tight_layout()
+                                fig.savefig(folder+'/processing/end_values/ncells_'+k+"_"+str(unique_value)+'_'+other_param+'_'+str(second_unique_value)+'_time_'+str(target_gen)+'.png')
+                                plt.close(fig)
+
+                                
 
 
                 
