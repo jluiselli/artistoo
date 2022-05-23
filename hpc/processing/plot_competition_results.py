@@ -47,6 +47,9 @@ else:
     for f in os.listdir(folder):
         print(f)
         k = f.replace('/',' ').split('-')
+        if k[0]!='seed':
+            continue
+        k = k[:8]+k[9:]
         i = 0
         while i < len(k):
             try:
@@ -57,12 +60,8 @@ else:
                     i=0
                     continue
             except:
-                i+=1
+                pass
             i+=1
-        i = iter(k)
-        params = dict(zip(i,i))
-        
-        k = f.replace('/',' ').split('-')
         i = iter(k)
         params = dict(zip(i,i))
 
