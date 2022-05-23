@@ -5,6 +5,7 @@ import matplotlib.patches as mpatches
 import numpy as np
 import itertools
 import argparse
+import re
  
 # Initialize parser
 parser = argparse.ArgumentParser()
@@ -30,23 +31,32 @@ if not args.force and (os.path.exists(folder+'/hosts.csv') and os.path.exists(fo
 
 for f in [seed_folder for seed_folder in os.listdir(folder) if seed_folder[:4]=='seed']:
     #Iterating over folder beginning with "seed"
+    print(f)
     k = f.replace('/',' ').split('-')
     i = 0
     while i < len(k):
         try:
-            if k[i][-2:]=='1e' or k[i][-2:]=='5e' or k[i][-2:]=='2e': #For degenerated cases of rates
+            if k[i][-2:]=='1e' or k[i][-2:]=='5e' or k[i][-2:]=='2e'  or k[i][-2:]=='3e' or k[i][-2:]=='4e'  or k[i][-2:]=='6e'  or k[i][-2:]=='7e'  or k[i][-2:]=='8e' or k[i][-2:]=='9e': #For degenerated cases of rates
                 k[i] = k[i]+ '-' + k[i+1]
                 if i < len(k)-2:
                     k = k[:i+1]+k[i+2:]
                 i=0
                 continue
         except:
-            i+=1
+            pass
         i+=1
     i = iter(k)
     params = dict(zip(i,i))
 
+    for key in params:
+        if params[key][0]=='0':
+            params[key]=params[key][0]+'.'+params[key][1:]
+        if re.search(r'[0-9][0-9]e', params[key][:3]) != None:
+            params[key]=params[key][0]+'.'+params[key][1:]
+        if key[:3]=='rep':
+            params[key]=params[key][:2]+'.'+params[key][2:]
     print(params)
+
     try:
         hosts_tmp = pd.read_csv('./'+folder+'/'+f+'/Hosts_Mitochondrialog.txt', sep=';', low_memory=False)
         mit_tmp = pd.read_csv('./'+folder+'/'+f+'/Mit_Mitochondrialog.txt', sep=';', low_memory=False)
