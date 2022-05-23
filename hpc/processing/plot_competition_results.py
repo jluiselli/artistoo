@@ -50,8 +50,7 @@ else:
         i = 0
         while i < len(k):
             try:
-                if k[i][-2:]=='1e' or k[i][-2:]=='5e' or k[i][-2:]=='2e'  or k[i][-2:]=='3e'
-                 or k[i][-2:]=='4e'  or k[i][-2:]=='6e'  or k[i][-2:]=='7e'  or k[i][-2:]=='8e' or k[i][-2:]=='9e': #For degenerated cases of rates
+                if k[i][-2:]=='1e' or k[i][-2:]=='5e' or k[i][-2:]=='2e'  or k[i][-2:]=='3e' or k[i][-2:]=='4e'  or k[i][-2:]=='6e'  or k[i][-2:]=='7e'  or k[i][-2:]=='8e' or k[i][-2:]=='9e': #For degenerated cases of rates
                     k[i] = k[i]+ '-' + k[i+1]
                     if i < len(k)-2:
                         k = k[:i+1]+k[i+2:]
