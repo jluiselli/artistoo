@@ -446,15 +446,17 @@ class Mitochondrion extends SubCell {
 		this.divideProducts(this.bad_products, partner.bad_products, partition)
 
 		/** stochastically divide mtDNA copies between the 2 mitochondria */
+		let this_cell = []
 		let new_partner = []
 		for (let dna of this.DNA){
 			if (this.C.random() < partition){
 				new_partner.push(dna)
 			} else {
-				this.DNA.push(dna)
+				this_cell.push(dna)
 			}
 		}
 		partner.DNA = new_partner
+		this.DNA = this_cell
 
 		/** stochastically divide complexes between mitochondria */
 		let new_partner_complexes = []
