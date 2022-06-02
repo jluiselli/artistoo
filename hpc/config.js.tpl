@@ -4,77 +4,79 @@ let ColorMap = require("../../../examples/node/colormap-cjs.js")
 "use strict"
 
 let config = {
-	// Grid settings
-	ndim : 2,
-	field_size : [450,450],
-	
-	// CPM parameters and configuration
-	conf : {
-		// Basic CPM parameters
-		torus : [true,true],				// Should the grid have linked borders?
-		seed : 8547985743,							// Seed for random number generation.
-		T : 2,								// CPM temperature
+    // Grid settings
+    ndim : 2,
+    field_size : [450,450],
+    
+    // CPM parameters and configuration
+    conf : {
+        // Basic CPM parameters
+        torus : [true,true],          // Should the grid have linked borders?
+        seed : 8547985743,            // Seed for random number generation.
+        T : 2,                        // CPM temperature
         
     
-		CELLS : ["empty", CPM.HostCell, CPM.Mitochondrion], 
-		  
+        CELLS : ["empty", CPM.HostCell, CPM.Mitochondrion], 
+          
         J_INT:  [[15,15], 
-        		 [15,15]],
+                 [15,15]],
         J_EXT:  [[15,50,1500], 
-				 [50,750,1500], 
-            	 [1500, 1500,15000]],
-		
+                 [50,750,1500], 
+                 [1500, 1500,15000]],
+        
         N_OXPHOS : 5, 
         N_TRANSLATE : 5,
         N_REPLICATE : 50,
         INIT_MITO_V : 500,
         N_INIT_DNA : 5,
-		MTDNA_MUT_REP : 0.0003,
-		MTDNA_MUT_INIT: 0.002,
+        MTDNA_MUT_REP : 0.0003,
+        MTDNA_MUT_INIT: 0.002,
         MTDNA_MUT_ROS : 0.000005,
-		NDNA_MUT_REP : 0,
+        NDNA_MUT_REP : 0,
         NDNA_MUT_LIFETIME : 0.000005,
-		INIT_HOST_V : 700,
-		INIT_OXPHOS : 10,
-		INIT_TRANSLATE : 10,
-		INIT_REPLICATE : 2,
-		FACTOR_HOSTSHRINK_OVERFLOW: 10,
-		// Carrying capacity for pathways per 100 volume pixels 
-		OXPHOS_PER_100VOL: 0.5,
-		// Constraint parameters. 
-		// Mostly these have the format of an array in which each element specifies the
-		// parameter value for one of the cellkinds on the grid.
+        INIT_HOST_V : 700,
+        INIT_OXPHOS : 10,
+        INIT_TRANSLATE : 10,
+        INIT_REPLICATE : 2,
+        FACTOR_HOSTSHRINK_OVERFLOW: 10,
+        // Carrying capacity for pathways per 100 volume pixels 
+        OXPHOS_PER_100VOL: 0.5,
+        // Constraint parameters. 
+        // Mostly these have the format of an array in which each element specifies the
+        // parameter value for one of the cellkinds on the grid.
         // First value is always cellkind 0 (the background) and is often not used.
-		REPLICATE_TIME: 30,
-		fission_rate : 0.00002,
-		fusion_rate : 0.0001,
-		rep: 19,
-		rep2: 0,
-		evolvables: {"rep": {"sigma" : 0.5, "upper_bound":22}, 
-							"HOST_V_PER_OXPHOS":{"sigma" : 0.025}, 
-							"host_division_volume":{"sigma" : 75, "lower_bound" : 2, "upper_bound":5000},
-                            "fission_rate": {"sigma" : 0.000001}, 
-							"fusion_rate":{"sigma" : 0.00003},
-		 } ,
+        REPLICATE_TIME: 30,
+        fission_rate : 0.00002,
+        fusion_rate : 0.0001,
+        sharing_rate : 0.0001,
+        rep: 19,
+        rep2: 0,
+        evolvables: {"rep": {"sigma" : 0.5, "upper_bound":23}, 
+                    "HOST_V_PER_OXPHOS":{"sigma" : 0.025}, 
+                    "host_division_volume":{"sigma" : 75, "lower_bound" : 2, "upper_bound":5000},
+                    "fission_rate": {"sigma" : 0.000001}, 
+                    "fusion_rate":{"sigma" : 0.00003},
+                    "sharing_rate":{"sigma" : 0.00003},
+         } ,
 
-		
-		deprecation_rate : 0.1,
+        
+        deprecation_rate : 0.1,
         PROT_MUT_ROS : 0,
-		
-		MITO_SHRINK : 1,
-		MITOPHAGY_THRESHOLD: 0,
-		MITOPHAGY_SHRINK : -10,
-		HOST_SHRINK : 5,
-		MITO_GROWTH_MAX : 9,
-		HOST_GROWTH_MAX : 9,
-		MITO_V_PER_OXPHOS : 2,
-		HOST_V_PER_OXPHOS : 0.3,
-	
-		VOLCHANGE_THRESHOLD : 10,
-		SELECTIVE_FUSION: false,
+        
+        MITO_SHRINK : 1,
+        MITOPHAGY_THRESHOLD: 0,
+        MITOPHAGY_SHRINK : -10,
+        HOST_SHRINK : 5,
+        MITO_GROWTH_MAX : 9,
+        HOST_GROWTH_MAX : 9,
+        MITO_V_PER_OXPHOS : 2,
+        HOST_V_PER_OXPHOS : 0.3,
+    
+        VOLCHANGE_THRESHOLD : 10,
+        SELECTIVE_FUSION: false,
         FUSION_THRESHOLD : 0,
 
-		MITO_PARTITION : 0.5,
+        MITO_PARTITION : 0.5,
         MITO_DIV_VOLUME : -1,
 
 
@@ -241,7 +243,28 @@ function pickFuser(cell){
     for (let neigh of Object.keys(neighs)){
         fusable = sim.C.cells[neigh]
         if (fusable instanceof CPM.Mitochondrion && cell.host == fusable.host){
-            if (!(sim.C.conf["SELECTIVE_FUSION"]) || (cell.oxphos >= cell.cellParameter('MITOPHAGY_THRESHOLD') && fusable.oxphos >= cell.cellParameter('MITOPHAGY_THRESHOLD'))){
+            if (!(sim.C.conf["SELECTIVE_FUSION"]) || (cell.ros/cell.oxphos <= cell.cellParameter('FUSION_THRESHOLD') && fusable.ros/fusable.oxphos <= cell.cellParameter('FUSION_THRESHOLD'))){
+                totalborder += sim.C.getStat( CPM.CellNeighborList )[cell.id][fusable.id]
+                fusables.push(fusable.id)
+                bordercumsum.push(totalborder)
+            }
+        }
+    }
+    bordercumsum = bordercumsum.map(function(item) {return item/ totalborder})
+    if (fusables.length > 0){
+        let which = bordercumsum.findIndex(element => sim.C.random() < element )
+        return fusables[which]
+    }
+    return undefined
+}
+
+function pickSharer(cell){ // Same condition as fusion, but can be adjusted separately later
+    let fusables = [], bordercumsum = [], totalborder = 0
+    let neighs = sim.C.getStat( CPM.CellNeighborList )[cell.id] //needs to be recomputed as neighbors change with fisfus :(
+    for (let neigh of Object.keys(neighs)){
+        fusable = sim.C.cells[neigh]
+        if (fusable instanceof CPM.Mitochondrion && cell.host == fusable.host){
+            if (!(sim.C.conf["SELECTIVE_FUSION"]) || (cell.ros/cell.oxphos <= cell.cellParameter('FUSION_THRESHOLD') && fusable.ros/fusable.oxphos <= cell.cellParameter('FUSION_THRESHOLD'))){
                 totalborder += sim.C.getStat( CPM.CellNeighborList )[cell.id][fusable.id]
                 fusables.push(fusable.id)
                 bordercumsum.push(totalborder)
@@ -433,7 +456,7 @@ function logStats(){
                         mitstr += key2+";"
                     }
                 }
-				i++
+                i++
             }
             mitstr += '\n'
         }
