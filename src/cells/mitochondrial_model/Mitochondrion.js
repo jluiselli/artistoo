@@ -257,6 +257,41 @@ class Mitochondrion extends SubCell {
 	}
 
 	/**
+     * Do all internal processes of sharing:
+     * combine Products 
+     * combine mtDNA
+	 * redivide both
+     * @param {Mitochondrion} partner 
+     */
+	share(partner) {
+		this.products.arr = this.sum_arr(this.products.arr, partner.products.arr)
+		this.bad_products.arr = this.sum_arr(this.bad_products.arr, partner.bad_products.arr)
+		this.DNA = [...this.DNA, ...partner.DNA]
+		
+		/** Clear partner of its products and DNA */
+		partner.clear()
+
+		/** Separate everything again based on their respective volume */
+		let partition = partner.vol/(this.vol + partner.vol) // propotion of things that should go to partner
+		// console.log(this.vol, partner.vol, partition)
+		this.divideProducts(this.products, partner.products, partition)
+		this.divideProducts(this.bad_products, partner.bad_products, partition)
+
+		/** stochastically divide mtDNA copies between the 2 mitochondria */
+		let new_partner = []
+		let this_cell = []
+		for (let dna of this.DNA){
+			if (this.C.random() < partition){
+				new_partner.push(dna)
+			} else {
+				this_cell.push(dna)
+			}
+		}
+		partner.DNA = new_partner
+		this.DNA = this_cell
+	}
+
+	/**
      * Checks against carrying capacity (defined by volume) whether the current product can be added
      * @returns {Boolean} - whether the addition is successful
      */
@@ -483,7 +518,14 @@ class Mitochondrion extends SubCell {
 		if (!this.fs.existsSync(logpath)){
 			let deathstr = ""
 			for (let key in dct){
-				deathstr += key + ";"
+				if (key == "evolvables" ){
+					for (let key2 in dct[key]){
+						deathstr += dct[key][key2]+";"
+					}
+				}
+				else {
+					deathstr += key + ";"
+				}
 			}
 			deathstr += "\n"
 			this.fs.appendFileSync(logpath, deathstr)

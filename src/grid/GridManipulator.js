@@ -556,6 +556,13 @@ class GridManipulator {
 		this.C.stat_values = {} // remove cached stats or this will crash!!!
 		return cid1
 	}
+
+	share(cid1, cid2){
+		if (this.C.hasOwnProperty("cells")){
+				this.C.cells[cid1].share(this.C.cells[cid2])
+		}
+	}
+		
 }
 
 
