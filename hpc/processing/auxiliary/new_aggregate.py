@@ -33,6 +33,7 @@ for f in [seed_folder for seed_folder in os.listdir(folder) if seed_folder[:4]==
     #Iterating over folder beginning with "seed"
     print(f)
     k = f.replace('/',' ').split('-')
+    # k.pop(8)
     i = 0
     while i < len(k):
         try:
@@ -52,6 +53,8 @@ for f in [seed_folder for seed_folder in os.listdir(folder) if seed_folder[:4]==
         if params[key][0]=='0':
             params[key]=params[key][0]+'.'+params[key][1:]
         if re.search(r'[0-9][0-9]e', params[key][:3]) != None:
+            params[key]=params[key][0]+'.'+params[key][1:]
+        if re.search(r'[0-9][0-9][0-9]e', params[key][:4]) != None:
             params[key]=params[key][0]+'.'+params[key][1:]
         if key[:3]=='rep':
             params[key]=params[key][:2]+'.'+params[key][2:]
