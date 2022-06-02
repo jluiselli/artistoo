@@ -47,15 +47,13 @@ let config = {
         // First value is always cellkind 0 (the background) and is often not used.
 		REPLICATE_TIME: 30,
 		fission_rate : 0.00002,
-		fusion_rate : 0.001,
+		fusion_rate : 0.0001,
 		rep: 19,
 		rep2: 0,
 		evolvables: {"rep": {"sigma" : 0.5, "upper_bound":22}, 
 							"HOST_V_PER_OXPHOS":{"sigma" : 0.025}, 
-							"host_division_volume":{"sigma" : 75, "lower_bound" : 2, "upper_bound":5000}
-		 } ,
-        
-        evolvables_mit: {"fission_rate": {"sigma" : 0.000001}, 
+							"host_division_volume":{"sigma" : 75, "lower_bound" : 2, "upper_bound":5000},
+                            "fission_rate": {"sigma" : 0.000001}, 
 							"fusion_rate":{"sigma" : 0.00003},
 		 } ,
 
