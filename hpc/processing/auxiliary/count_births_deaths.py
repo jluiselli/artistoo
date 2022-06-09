@@ -33,20 +33,26 @@ def count_births_deaths(folder, verbose=False):
     except:
         if verbose:
             print("computing from scratch")
-        for tmpfile in ["/deaths_host.csv","/deaths_mit.csv","/divisions.csv"]:
+        for tmpfile in ["/deaths_host.csv","/deaths_mit.csv","/divisions.csv", "/hosts.csv"]:
             with open(folder+tmpfile) as f:
                 lines = f.readlines()
             for i in range(100):
                 lines[0]=lines[0].replace('; '+str(i)+';',';')
-            lines[0]=lines[0].replace('tr_genes;;mit','tr_genes;mit')
-            lines[0]=lines[0].replace('mit_growth_rate;s','mit_growth_rate;;s')
-            lines[0]=lines[0].replace('e;selective','e;;selective')
-            lines[0]=lines[0].replace('g;selective','g;;selective')
-            lines[0]=lines[0].replace(';;evolving_grrate',';evolving_grrate')
-            lines[0]=lines[0].replace('init_fusion;s','init_fusion;;s')
-            lines[0]=lines[0].replace(';evolvables_sharing_rate;;selective',';evolvables_sharing_rate;;;;selective')
-            lines[0]=lines[0].replace(';evolvables_sharing_rate;;;;selective',';evolvables_sharing_rate;;;selective')
-            lines[0]=lines[O].replace('evolving_grrate;sharing;selective;','evolving_grrate;sharing;;selective;')
+            # lines[0]=lines[0].replace('tr_genes;;mit','tr_genes;mit')
+            # lines[0]=lines[0].replace(';tr_genes;evolving_grrate',';tr_genes;;evolving_grrate')
+            # lines[0]=lines[0].replace('mit_growth_rate;s','mit_growth_rate;;s')
+            # lines[0]=lines[0].replace('e;selective','e;;selective')
+            # lines[0]=lines[0].replace('g;selective','g;;selective')
+            # lines[0]=lines[0].replace('init_fusion;s','init_fusion;;s')
+            # lines[0]=lines[0].replace(';evolvables_sharing_rate;;selective',';evolvables_sharing_rate;;;;selective')
+            # lines[0]=lines[0].replace(';evolvables_sharing_rate;;;;selective',';evolvables_sharing_rate;;;selective')
+            # lines[0]=lines[0].replace('evolving_grrate;sharing;selective;','evolving_grrate;sharing;;selective;')
+            lines[0]=lines[0].replace(';evolvables_sharing_rate; 21;',';evolvables_sharing_rate;;;')
+            lines[0]=lines[0].replace(";sharing;evolvables_sharing_rate;tr_genes;;evolving_grrate",
+                            ";sharing;evolvables_sharing_rate;;;tr_genes;evolving_grrate")
+            lines[0]=lines[0].replace(";sharing;tr_genes",";sharing;;;tr_genes")
+            lines[0]=lines[0].replace('evolvables_sharing_rate;tr_genes','evolvables_sharing_rate;;;tr_genes')
+            lines[0]=lines[0].replace('evolvables_sharing_rate;;;;tr_genes','evolvables_sharing_rate;;;tr_genes')
             with open(folder+tmpfile,'w') as f:
                 f.writelines(lines)
             
@@ -136,28 +142,28 @@ def count_births_deaths(folder, verbose=False):
     if verbose:
         print("now to rates")
 
-    for tmpfile in ["/hosts.csv","/mit.csv"]:
-        print("rewriting ", tmpfile)
-        with open(folder+tmpfile) as f:
-            lines = f.readlines()
-        lines[0]=lines[0].replace('""" 0"""""""','')
-        lines[0]=lines[0].replace('; 19;',';')
-        for i in range(100):
-            lines[0]=lines[0].replace('; '+str(i)+';',';')
-            lines[0]=lines[0].replace(';""" '+str(i)+'"""""""',';')
-        lines[0]=lines[0].replace('tr_genes;;mit','tr_genes;mit')
-        lines[0]=lines[0].replace('tr_genes;tr_genes;','')
-        lines[0]=lines[0].replace('init_fusion;s','init_fusion;;s')
-        lines[0]=lines[0].replace('mit_growth_rate;s','mit_growth_rate;;s')
-        lines[0]=lines[0].replace('tr_genes;evolving_grrate','tr_genes;;evolving_grrate')
-        lines[0]=lines[0].replace('e;selective','e;;selective')
-        lines[0]=lines[0].replace('g;selective','g;;selective')
-        if folder[-4:]=='cplx':
-            lines[0]=lines[0].replace('e;selective','e;;;selective')
-            lines[0]=lines[0].replace('e;;selective','e;;;selective')
-        print(lines[0])
-        with open(folder+tmpfile,'w') as f:
-            f.writelines(lines)
+    # for tmpfile in ["/hosts.csv","/mit.csv"]:
+    #     print("rewriting ", tmpfile)
+    #     with open(folder+tmpfile) as f:
+    #         lines = f.readlines()
+    #     lines[0]=lines[0].replace('""" 0"""""""','')
+    #     lines[0]=lines[0].replace('; 19;',';')
+    #     for i in range(100):
+    #         lines[0]=lines[0].replace('; '+str(i)+';',';')
+    #         lines[0]=lines[0].replace(';""" '+str(i)+'"""""""',';')
+    #     lines[0]=lines[0].replace('tr_genes;;mit','tr_genes;mit')
+    #     lines[0]=lines[0].replace('tr_genes;tr_genes;','')
+    #     lines[0]=lines[0].replace('init_fusion;s','init_fusion;;s')
+    #     lines[0]=lines[0].replace('mit_growth_rate;s','mit_growth_rate;;s')
+    #     lines[0]=lines[0].replace('tr_genes;evolving_grrate','tr_genes;;evolving_grrate')
+    #     lines[0]=lines[0].replace('e;selective','e;;selective')
+    #     lines[0]=lines[0].replace('g;selective','g;;selective')
+    #     if folder[-4:]=='cplx':
+    #         lines[0]=lines[0].replace('e;selective','e;;;selective')
+    #         lines[0]=lines[0].replace('e;;selective','e;;;selective')
+    #     print(lines[0])
+    #     with open(folder+tmpfile,'w') as f:
+    #         f.writelines(lines)
     
     df_h = pd.read_csv(folder+'/hosts.csv', sep=';', index_col=False)
     # df_m = pd.read_csv(folder+'/mit.csv',low_memory=False, sep=';', index_col=False)
