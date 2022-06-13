@@ -13,7 +13,7 @@ let config = {
     conf : {
         // Basic CPM parameters
         torus : [true,true],                // Should the grid have linked borders?
-        seed : 8473984,                            // Seed for random number generation.
+        seed : SEED_NUMBER,                            // Seed for random number generation.
         T : 2,                                // CPM temperature
         
     
@@ -79,8 +79,9 @@ let config = {
     
         VOLCHANGE_THRESHOLD : 10,
         SELECTIVE_FUSION: false,
+        FUSION_THRESHOLD: [1.5, 100],
 
-        MITO_PARTITION : 0.5,
+        MITO_PARTITION : 0.33,
 
         // VolumeConstraint parameters
         LAMBDA_V : [0, 1, 1, 1],                // VolumeConstraint importance per cellkind
@@ -284,8 +285,7 @@ function pickFuser(cell){
     for (let neigh of Object.keys(neighs)){
         fusable = sim.C.cells[neigh]
         if (fusable instanceof CPM.Mitochondrion && cell.host == fusable.host){
-            if (!(sim.C.conf["SELECTIVE_FUSION"]) || (cell.oxphos >= cell.cellParameter('MITOPHAGY_THRESHOLD') && fusable.oxphos >= cell.cellParameter('MITOPHAGY_THRESHOLD'))){
-                totalborder += sim.C.getStat( CPM.CellNeighborList )[cell.id][fusable.id]
+            if (!(sim.C.conf["SELECTIVE_FUSION"]) || (cell.ros/cell.oxphos <= cell.cellParameter('FUSION_THRESHOLD')[cell.C.cells[cell.host].kind-1] && fusable.ros/fusable.oxphos <= cell.cellParameter('FUSION_THRESHOLD')[cell.C.cells[cell.host].kind-1])){                totalborder += sim.C.getStat( CPM.CellNeighborList )[cell.id][fusable.id]
                 fusables.push(fusable.id)
                 bordercumsum.push(totalborder)
             }
