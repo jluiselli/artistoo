@@ -33,7 +33,7 @@ def count_births_deaths(folder, verbose=False):
     except:
         if verbose:
             print("computing from scratch")
-        for tmpfile in ["/deaths_host.csv","/deaths_mit.csv","/divisions.csv", "/hosts.csv"]:
+        for tmpfile in ["/deaths_host.csv","/deaths_mit.csv","/divisions.csv", "/hosts.csv","/mit.csv"]:
             with open(folder+tmpfile) as f:
                 lines = f.readlines()
             for i in range(100):
@@ -51,6 +51,7 @@ def count_births_deaths(folder, verbose=False):
             lines[0]=lines[0].replace(";sharing;evolvables_sharing_rate;tr_genes;;evolving_grrate",
                             ";sharing;evolvables_sharing_rate;;;tr_genes;evolving_grrate")
             lines[0]=lines[0].replace(";sharing;tr_genes",";sharing;;;tr_genes")
+            lines[0]=lines[0].replace("selective;tr_genes","selective;;tr_genes")
             lines[0]=lines[0].replace('evolvables_sharing_rate;tr_genes','evolvables_sharing_rate;;;tr_genes')
             lines[0]=lines[0].replace('evolvables_sharing_rate;;;;tr_genes','evolvables_sharing_rate;;;tr_genes')
             with open(folder+tmpfile,'w') as f:

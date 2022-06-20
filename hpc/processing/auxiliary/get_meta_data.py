@@ -49,6 +49,9 @@ if args.verbose:
 rates["time"] = [t if t%10==0 else t-1 for t in rates["time"]]
 df["time"] = [t if t%10==0 else t-1 for t in df["time"]]
 
+print(df.dtypes)
+print(df['rep_genes'].unique())
+print(rates.dtypes)
 df = pd.merge_ordered(df, rates, fill_method='ffill')
 if args.verbose:
     print(df)
@@ -63,7 +66,7 @@ possibles_params = [
         'rep_genes','tr_genes','growth_rate','selective','seed','evolving_grrate','cplx',
         'rep','genes','pmut','pdeg','partition','damage','mit_growth_rate','host_growth_rate',
         'damage_rate','deprecation_rate','production','degradation','div_vol','host_mutation',
-        'mit_t','start','init_fusion','sharing', 'mutant', 'folder',
+        'mit_t','start','init_fusion','init_selective','sharing', 'mutant', 'folder',
     ]
 
 id = 0
