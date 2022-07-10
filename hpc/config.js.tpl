@@ -11,9 +11,9 @@ let config = {
     // CPM parameters and configuration
     conf : {
         // Basic CPM parameters
-        torus : [true,true],          // Should the grid have linked borders?
-        seed : 8547985743,            // Seed for random number generation.
-        T : 2,                        // CPM temperature
+        torus : [true,true],                // Should the grid have linked borders?
+        seed : 8547985743,                            // Seed for random number generation.
+        T : 2,                                // CPM temperature
         
     
         CELLS : ["empty", CPM.HostCell, CPM.Mitochondrion], 
@@ -47,16 +47,18 @@ let config = {
         // First value is always cellkind 0 (the background) and is often not used.
         REPLICATE_TIME: 30,
         fission_rate : 0.00002,
-        fusion_rate : 0.0001,
-        sharing_rate : 0.0001,
+        fusion_rate : 0.001,
+        sharing_rate : 0.1,
         rep: 19,
         rep2: 0,
-        evolvables: {"rep": {"sigma" : 0.5, "upper_bound":23}, 
-                    "HOST_V_PER_OXPHOS":{"sigma" : 0.025}, 
-                    "host_division_volume":{"sigma" : 75, "lower_bound" : 2, "upper_bound":5000},
-                    "fission_rate": {"sigma" : 0.000001}, 
-                    "fusion_rate":{"sigma" : 0.00003},
-                    "sharing_rate":{"sigma" : 0.00003},
+        evolvables: {
+            //"rep": {"sigma" : 0.5, "upper_bound":22}, 
+            //                "HOST_V_PER_OXPHOS":{"sigma" : 0.025}, 
+             //               "host_division_volume":{"sigma" : 75, "lower_bound" : 2, "upper_bound":5000},
+              //              "fission_rate": {"sigma" : 0.000001}, 
+               //             "fusion_rate":{"sigma" : 0.00003},
+                      //      "sharing_rate":{"sigma" : 0.00003},
+                            "FUSION_THRESHOLD":{"sigma" : 0.25},
          } ,
 
         
@@ -73,18 +75,17 @@ let config = {
         HOST_V_PER_OXPHOS : 0.3,
     
         VOLCHANGE_THRESHOLD : 10,
-        SELECTIVE_FUSION: false,
-        FUSION_THRESHOLD : 0,
+        SELECTIVE_FUSION: true,
+        FUSION_THRESHOLD : 5,
 
-        MITO_PARTITION : 0.5,
+        MITO_PARTITION : 0.33,
         MITO_DIV_VOLUME : -1,
 
-
-		// VolumeConstraint parameters
-		LAMBDA_V : [0, 1, 1],				// VolumeConstraint importance per cellkind
-		V : [0,502, 200],					
-		host_division_volume: 1000,
-	},
+        // VolumeConstraint parameters
+        LAMBDA_V : [0, 1, 1],                // VolumeConstraint importance per cellkind
+        V : [0,502, 200],                    
+        host_division_volume: 2000,
+    },
     
     // Simulation setup and configuration: this controls stuff like grid initialization,
     // runtime, and what the output should look like.
@@ -204,6 +205,12 @@ function postMCSListener(){
                     this.gm.fuseCells(cid, fuser)
                 }
             }
+            if (this.C.random() <cell.cellParameter("sharing_rate") ){
+                let sharer = pickSharer(cell)
+                if (sharer !== undefined){
+                    this.gm.share(cid, sharer)
+                }
+            }
         }
         if (cell instanceof CPM.SuperCell){
             if (cell.vol > cell.cellParameter('host_division_volume')){
@@ -264,6 +271,7 @@ function pickSharer(cell){ // Same condition as fusion, but can be adjusted sepa
     for (let neigh of Object.keys(neighs)){
         fusable = sim.C.cells[neigh]
         if (fusable instanceof CPM.Mitochondrion && cell.host == fusable.host){
+            // console.log(cell.cellParameter('FUSION_THRESHOLD'))
             if (!(sim.C.conf["SELECTIVE_FUSION"]) || (cell.ros/cell.oxphos <= cell.cellParameter('FUSION_THRESHOLD') && fusable.ros/fusable.oxphos <= cell.cellParameter('FUSION_THRESHOLD'))){
                 totalborder += sim.C.getStat( CPM.CellNeighborList )[cell.id][fusable.id]
                 fusables.push(fusable.id)
